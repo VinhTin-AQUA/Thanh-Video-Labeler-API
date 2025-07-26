@@ -1,11 +1,12 @@
 using ExcelVideoLablerAPI.Common.Constants;
 using ExcelVideoLablerAPI.Common.Responses;
+using ExcelVideoLablerAPI.Controllers.UploadAPI.Payload;
 using ExcelVideoLablerAPI.Models;
 using ExcelVideoLablerAPI.Repositories;
 using ExcelVideoLablerAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ExcelVideoLablerAPI.Controllers
+namespace ExcelVideoLablerAPI.Controllers.UploadAPI
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
@@ -31,9 +32,9 @@ namespace ExcelVideoLablerAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadExcel(IFormFile file)
+        public async Task<IActionResult> UploadExcel([FromForm] UploadFile uploadFile)
         {
-            if (file.Length == 0)
+            if (uploadFile.File == null || uploadFile.File.Length == 0)
             {
                 return BadRequest(new ApiResponse<object>
                 {
@@ -43,21 +44,22 @@ namespace ExcelVideoLablerAPI.Controllers
             }
 
             string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder);
-
-            if (System.IO.File.Exists(Path.Combine(filePath, file.FileName)))
+            if (!uploadFile.IsAccepted && System.IO.File.Exists(Path.Combine(filePath, uploadFile.File.FileName)))
             {
                 return BadRequest(new ApiResponse<object>
                 {
-                    Data = null,
+                    Data = new
+                    {
+                        IsAccepted = !uploadFile.IsAccepted,
+                    },
                     Message = "File hiện đã tồn tại trong hệ thống. Nếu tiếp tục upload dữ liệu cũ sẽ mất."
                 });
             }
             
-            _ = await fileService.SaveFile(file, filePath);
-
+            _ = await fileService.SaveFile(uploadFile.File, filePath);
             var newVideo = new Config()
             {
-                ExceFileName = file.FileName,
+                ExceFileName = uploadFile.File.FileName,
                 SheetIndex = 0,
                 TotalDownloaded = 0
             };

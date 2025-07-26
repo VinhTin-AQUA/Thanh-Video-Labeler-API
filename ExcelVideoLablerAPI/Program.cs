@@ -25,6 +25,13 @@ builder.Services.AddSingleton<FileService>();
 builder.Services.AddSingleton<ConfigService>();
 builder.Services.AddSingleton<DownloadVideoService>();
 
+// enable cors
+builder.Services.AddCors(c =>
+{
+    c.AddPolicy("AllowOrigin", option => option.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
+
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -39,6 +46,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowOrigin");
 
 app.UseHttpsRedirection();
 
