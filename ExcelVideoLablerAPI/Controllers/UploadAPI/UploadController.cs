@@ -42,7 +42,18 @@ namespace ExcelVideoLablerAPI.Controllers
                 });
             }
 
-            _ = await fileService.SaveFile(file, Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder));
+            string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder);
+
+            if (System.IO.File.Exists(Path.Combine(filePath, file.FileName)))
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Data = null,
+                    Message = "File hiện đã tồn tại trong hệ thống. Nếu tiếp tục upload dữ liệu cũ sẽ mất."
+                });
+            }
+            
+            _ = await fileService.SaveFile(file, filePath);
 
             var newVideo = new Config()
             {
