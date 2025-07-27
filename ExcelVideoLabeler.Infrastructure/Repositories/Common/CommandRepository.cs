@@ -50,6 +50,13 @@ namespace ExcelVideoLabeler.Infrastructure.Repositories.Common
             return entities;
         }
 
+        public async Task<bool> DeleteRangeAsync(ICollection<T> entities)
+        {
+            dbSet.RemoveRange(entities);
+            var r = await context.SaveChangesAsync();
+            return r > 0;
+        }
+
         public void Dispose()
         {
             context.Dispose();

@@ -11,7 +11,6 @@ using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
 using ExcelVideoLabeler.Infrastructure.Repositories.Models;
 using ExcelVideoLabeler.Infrastructure.Repositories.VideoInfoRepository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace ExcelVideoLabeler.API.Controllers.VideoAPI
 {
@@ -21,11 +20,9 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
     {
         private readonly ConfigService configService;
         private readonly VideoExcelService videoExcelService;
-        private readonly VideoService videoService;
         private readonly IVideoInfoQueryRepository videoInfoQueryRepository;
         private readonly IVideoInfoCommandRepository videoInfoCommandRepository;
         private readonly IConfigCommandRepository configCommandRepository;
-        private readonly VideoDownloadHubService videoDownloadHubService;
         private readonly IServiceScopeFactory scopeFactory;
         private readonly IWebHostEnvironment env;
 
@@ -37,21 +34,17 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
         public VideoController(
             ConfigService configService,
             VideoExcelService videoExcelService,
-            VideoService videoService,
             IVideoInfoQueryRepository videoInfoQueryRepository,
             IVideoInfoCommandRepository  videoInfoCommandRepository,
             IConfigCommandRepository configCommandRepository,
-            VideoDownloadHubService videoDownloadHubService,
             IServiceScopeFactory scopeFactory,
             IWebHostEnvironment env)
         {
             this.configService = configService;
             this.videoExcelService = videoExcelService;
-            this.videoService = videoService;
             this.videoInfoQueryRepository = videoInfoQueryRepository;
             this.videoInfoCommandRepository = videoInfoCommandRepository;
             this.configCommandRepository = configCommandRepository;
-            this.videoDownloadHubService = videoDownloadHubService;
             this.scopeFactory = scopeFactory;
             this.env = env;
         }
@@ -367,7 +360,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
 
             if (label != null)
             {
-                if (label.Value == true)
+                if (label.Value)
                 {
                     queryOptionBuilder.Where(x => string.IsNullOrEmpty(x.Label) == false);
                 }
@@ -375,7 +368,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             
             if (noLabel != null)
             {
-                if (noLabel.Value == true)
+                if (noLabel.Value)
                 {
                     queryOptionBuilder.Where(x => string.IsNullOrEmpty(x.Label) == true);
                 }
@@ -389,6 +382,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 });
         }
 
+        [HttpPost]
         public async Task<IActionResult> UpdateVideo(UpdateVideo model)
         {
             var video = await videoInfoQueryRepository.GetByIdAsync(model.Id);
@@ -402,7 +396,25 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             video.Label =  model.Label;
             await videoInfoCommandRepository.UpdateAsync(video);
             
-            return Ok();
+            return Ok(new ApiResponse<object>()
+            {
+                Message = "Cập nhật thành công."
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExportExcel(ExportExcel exportExcel)
+        {
+            var data = await videoInfoQueryRepository.GetAllAsync();
+            var byteData = videoExcelService.ExportExcel(data.ToList());
+
+            if (exportExcel.ClearAllData)
+            {
+                 await videoInfoCommandRepository.DeleteRangeAsync(data.ToList());
+            }
+            return File(byteData, 
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+                "Export.xlsx");
         }
         
         #region private methods
