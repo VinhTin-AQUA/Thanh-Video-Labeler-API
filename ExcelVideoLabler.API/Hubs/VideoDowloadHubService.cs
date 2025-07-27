@@ -1,3 +1,4 @@
+using ExcelVideoLabler.API.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ExcelVideoLabler.API.Hubs
@@ -11,10 +12,10 @@ namespace ExcelVideoLabler.API.Hubs
             this.videoDowloadHub = videoDowloadHub;
         }
 
-        public async Task RecieveTotalVideo(int totalDownloadsSuccess, int totalDownloadsFailed)
+        public async Task RecieveTotalVideo(ResultDownloadVideo resultDownloadVideo)
         {
            await videoDowloadHub.Clients.Client(VideoDowloadHub.ConnectionId)
-                .RecieveTotalVideo(totalDownloadsSuccess, totalDownloadsFailed);
+                .RecieveTotalVideo(resultDownloadVideo);
         }
     }
 }

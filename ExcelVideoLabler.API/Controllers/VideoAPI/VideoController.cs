@@ -2,6 +2,7 @@ using Aspose.Cells;
 using ExcelVideoLabler.API.Constants;
 using ExcelVideoLabler.API.Controllers.Common;
 using ExcelVideoLabler.API.Hubs;
+using ExcelVideoLabler.API.Models;
 using ExcelVideoLabler.API.Services;
 using ExcelVideoLabler.Domain.Entities;
 using ExcelVideoLabler.Domain.Enums;
@@ -9,6 +10,7 @@ using ExcelVideoLabler.Infrastructure.Repositories.ConfigRepository;
 using ExcelVideoLabler.Infrastructure.Repositories.Models;
 using ExcelVideoLabler.Infrastructure.Repositories.VideoInfoRepository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ExcelVideoLabler.API.Controllers.VideoAPI
 {
@@ -23,12 +25,13 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
         private readonly IVideoInfoCommandRepository videoInfoCommandRepository;
         private readonly IConfigCommandRepository configCommandRepository;
         private readonly VideoDowloadHubService videoDowloadHubService;
+        private readonly IHubContext<VideoDowloadHub, IVideoDowloadHub> videoDowloadHub;
         private readonly IWebHostEnvironment env;
 
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private static volatile bool _isDownloading;
-        // private static volatile bool _cancelRequested;
-        private static CancellationTokenSource _cts = new();
+        private static volatile bool _cancelRequested;
+        private static CancellationTokenSource cts = new();
 
         public VideoController(
             ConfigService configService,
@@ -38,6 +41,7 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
             IVideoInfoCommandRepository  videoInfoCommandRepository,
             IConfigCommandRepository configCommandRepository,
             VideoDowloadHubService videoDowloadHubService,
+            IHubContext<VideoDowloadHub, IVideoDowloadHub>  videoDowloadHub, 
             IWebHostEnvironment env)
         {
             this.configService = configService;
@@ -47,7 +51,60 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
             this.videoInfoCommandRepository = videoInfoCommandRepository;
             this.configCommandRepository = configCommandRepository;
             this.videoDowloadHubService = videoDowloadHubService;
+            this.videoDowloadHub = videoDowloadHub;
             this.env = env;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRemainingVideos()
+        {
+            if (string.IsNullOrEmpty(ConfigService.Config.ExceFileName))
+            {
+                return Ok(new ApiResponse<object>()
+                {
+                    Data = new
+                    {
+                        Total = 0,
+                        SheetName = "",
+                        StartRowInSheet = -1,
+                    },
+                    Message = "File không tồn tại. Vui lòng upload file."
+                });
+            }
+            
+            string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder,
+                ConfigService.Config.ExceFileName);
+            if (!System.IO.File.Exists(filePath))
+            {
+                return Ok(new ApiResponse<object>()
+                {
+                    Data = new
+                    {
+                        Total = 0,
+                        SheetName = "",
+                        StartRowInSheet = -1,
+                    },
+                    Message = "File không tồn tại. Vui lòng upload file."
+                });
+            }
+            
+            using Workbook workbook = new Workbook(filePath);
+            using Worksheet sheet = workbook.Worksheets[ConfigService.Config.SheetIndex];
+            QueryOptionsBuilder<VideoInfo> queryOptionsBuilder = new();
+            queryOptionsBuilder.Where(x => x.VideoStatus == VideoStatus.Pending);
+            var r = await videoInfoQueryRepository.FilterAsync(queryOptionsBuilder.Build());
+            
+            return Ok(new ApiResponse<object>()
+            {
+                Data = new
+                {
+                    ListVideo = r.Take(5).ToList(),
+                    Total = r.Count,
+                    SheetName = sheet.Name,
+                    StartRowInSheet = ConfigService.Config.RowIndex,
+                },
+                Message = "File không tồn tại. Vui lòng upload file."
+            });
         }
 
         [HttpPost]
@@ -136,7 +193,7 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                 Message = "Init hoàn tất."
             });
         }
-
+   
         [HttpPost]
         public async Task<IActionResult> StartDownload()
         {
@@ -147,78 +204,172 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                     Message = "Đang tải video. Vui lòng đợi hoàn tất hoặc dừng quá trình hiện tại."
                 });
             }
-
-            int maxParallel = 2;
+            
+            cts = new CancellationTokenSource();
             await _semaphore.WaitAsync();
             _isDownloading = true;
-            _cts = new CancellationTokenSource(); // Khởi tạo mới mỗi lần
-            var token = _cts.Token;
+            _cancelRequested = false;
+            var token = cts.Token;
+            
 
             try
             {
                 var queryOptionBuilder = new QueryOptionsBuilder<VideoInfo>();
                 queryOptionBuilder.Where(x => x.VideoStatus == VideoStatus.Pending);
                 var listVideo = await videoInfoQueryRepository.FilterAsync(queryOptionBuilder.Build());
-                var throttler = new SemaphoreSlim(maxParallel);
-                var tasks = new List<Task>();
-
-                foreach (var video in listVideo)
+                int total = listVideo.Count;
+                int maxConcurrentDownloads = 3; // Số video tải đồng thời
+                
+                _ = Task.Run(async () =>
                 {
-                    await throttler.WaitAsync(token); // Dừng nếu token bị huỷ
+                    var semaphoreSlim = new SemaphoreSlim(maxConcurrentDownloads);
+                    var downloadTasks = new List<Task>();
+                    int totalSuccess = 0;
+                    int totalFailed = 0;
 
-                    var task = Task.Run(async () =>
+                    try
                     {
-                        try
+                        for (int i = 0; i < total; i++)
                         {
-                            if (token.IsCancellationRequested) return;
+                            if (_cancelRequested || token.IsCancellationRequested)
+                                break;
 
-                            bool check =
-                                await downloadVideoService.StartDownloadingAsync(video.Link, video.TransID, token);
+                            await semaphoreSlim.WaitAsync(token);
 
-                            if (check)
+                            int index = i; // Local copy for closure
+                            var task = Task.Run(async () =>
                             {
-                                video.VideoStatus = VideoStatus.Downloaded;
-                                await videoDowloadHubService.RecieveTotalVideo(1, 0);
-                            }
-                            else
-                            {
-                                video.VideoStatus = VideoStatus.ErrorLink;
-                                await videoDowloadHubService.RecieveTotalVideo(0, 1);
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            await videoDowloadHubService.RecieveTotalVideo(0, 1);
-                            video.VideoStatus = VideoStatus.Pending; // Hoặc trạng thái riêng
-                        }
-                        finally
-                        {
-                            throttler.Release();
-                        }
-                    }, token);
+                                try
+                                {
+                                    var video = listVideo[index];
+                                    bool check = await downloadVideoService.StartDownloadingAsync(video.Link, video.TransID, token);
 
-                    tasks.Add(task);
-                }
+                                    if (!check)
+                                    {
+                                        video.VideoStatus = VideoStatus.ErrorLink;
+                                        Interlocked.Increment(ref totalFailed);
+                                        await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
+                                        {
+                                            IsSuccess = false,
+                                            TotalDownloadsSuccess = 0,
+                                            TotalDownloadsFailed = 1,
+                                            Link = video.Link,
+                                            TransId = video.TransID,
+                                        });
+                                    }
+                                    else
+                                    {
+                                        video.VideoStatus = VideoStatus.Downloaded;
+                                        Interlocked.Increment(ref totalSuccess);
+                                        await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
+                                        {
+                                            IsSuccess = true,
+                                            TotalDownloadsSuccess = 1,
+                                            TotalDownloadsFailed = 0,
+                                            Link = video.Link,
+                                            TransId = video.TransID,
+                                        });
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Lỗi khi tải video: {ex.Message}");
+                                }
+                                finally
+                                {
+                                    semaphoreSlim.Release();
+                                }
+                            }, token);
 
-                await Task.WhenAll(tasks);
-                await videoInfoCommandRepository.UpdateRangeAsync(listVideo);
+                            downloadTasks.Add(task);
+                        }
 
-                return Ok(new ApiResponse<object>()
+                        await Task.WhenAll(downloadTasks);
+                        await videoInfoCommandRepository.UpdateRangeAsync(listVideo);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Lỗi trong background download: {ex.Message}");
+                    }
+                    finally
+                    {
+                        _isDownloading = false;
+                        _semaphore.Release();
+                    }
+                });
+
+                #region tải 1 video.
+
+               
+                // _ = Task.Run(async () =>
+                // {
+                //     try
+                //     {
+                //         for (int i = 0; i < total; i++)
+                //         {
+                //             if (_cancelRequested || token.IsCancellationRequested)
+                //             {
+                //                 // await videoDowloadHubService.RecieveTotalVideo(0, total - i);
+                //                 break;
+                //             }
+                //
+                //             bool check = await downloadVideoService.StartDownloadingAsync(listVideo[i].Link, listVideo[i].TransID, token);
+                //
+                //             if (!check)
+                //             {
+                //                 listVideo[i].VideoStatus = VideoStatus.ErrorLink;
+                //                 await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
+                //                 {
+                //                     IsSuccess = false,
+                //                     TotalDownloadsSuccess =0,
+                //                     TotalDownloadsFailed = 1,
+                //                     Link = listVideo[i].Link,
+                //                     TransId = listVideo[i].TransID, 
+                //                 });
+                //                 
+                //                 continue;
+                //             }
+                //
+                //             listVideo[i].VideoStatus = VideoStatus.Downloaded;
+                //             await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
+                //             {
+                //                 IsSuccess = true,
+                //                 TotalDownloadsSuccess = 1,
+                //                 TotalDownloadsFailed = 0,
+                //                 Link = listVideo[i].Link,
+                //                 TransId = listVideo[i].TransID, 
+                //             });
+                //         }
+                //         await videoInfoCommandRepository.UpdateRangeAsync(listVideo);
+                //     }
+                //     catch (Exception ex)
+                //     {
+                //         // Ghi log nếu cần
+                //         Console.WriteLine($"Lỗi trong background download: {ex.Message}");
+                //     }
+                //     finally
+                //     {
+                //         _isDownloading = false;
+                //         _semaphore.Release();
+                //     }
+                // });
+
+                #endregion
+                
+
+                return Ok(new ApiResponse<object>
                 {
-                    Message = "Tải xuống hoàn tất hoặc đã bị dừng."
+                    Message = "Đang tải video."
                 });
             }
-            catch (OperationCanceledException)
-            {
-                return Ok(new ApiResponse<object> { Message = "Quá trình tải đã bị huỷ." });
-            }
-            finally
+            catch (Exception ex)
             {
                 _isDownloading = false;
                 _semaphore.Release();
+                return StatusCode(500, new ApiResponse<object> { Message = $"Lỗi: {ex.Message}" });
             }
         }
-
+        
         [HttpPost]
         public IActionResult StopDownload()
         {
@@ -230,15 +381,14 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                 });
             }
 
-            _cts.Cancel(); // Huỷ mọi token đang dùng
+            cts.Cancel(); // Huỷ mọi token đang dùng
 
             return Ok(new ApiResponse<object>
             {
-                Message = "Đã gửi yêu cầu dừng tải video."
+                Message = "Dừng tải video."
             });
         }
-
-        
+             
         #region private methods
 
         private async Task UpdateConfig(Config newConfig)
@@ -248,63 +398,6 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
         }
         
         #endregion
-        
-        // [HttpPost]
-        // public async Task<IActionResult> StartDownload()
-        // {
-        //     if (_isDownloading)
-        //     {
-        //         return BadRequest(new ApiResponse<object>
-        //         {
-        //             Message = "Đang tải video. Vui lòng đợi hoàn tất hoặc dừng quá trình hiện tại."
-        //         });
-        //     }
-        //     
-        //     await _semaphore.WaitAsync();
-        //     _isDownloading = true;
-        //     _cancelRequested = false;
-        //     try
-        //     {
-        //         var listVideo = await videoInfoRepository.GetAll(VideoStatus.Pending);
-        //         int total =  listVideo.Count;
-        //         
-        //         for(int i = 0; i < total; i++)
-        //         {
-        //             if (_cancelRequested)
-        //             {
-        //                 return Ok(new ApiResponse<object>
-        //                 {
-        //                     Message = "Đã dừng quá trình tải video."
-        //                 });
-        //             }
-        //
-        //             bool check = await downloadVideoService.StartDownloadingAsync(listVideo[i].Link, listVideo[i].TransID);
-        //
-        //             if (!check)
-        //             {
-        //                 listVideo[i].VideoStatus = VideoStatus.ErrorLink;
-        //                 continue;
-        //             }
-        //
-        //             listVideo[i].VideoStatus = VideoStatus.Downloaded;
-        //         }
-        //         
-        //         await videoInfoRepository.UpdateRange(listVideo);
-        //         return Ok(new ApiResponse<object>()
-        //         {
-        //             Data = null,
-        //             Message = "Tải xuống hoàn tất."
-        //         });
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         throw new Exception(ex.Message);
-        //     } 
-        //     finally
-        //     {
-        //         _isDownloading = false;
-        //         _semaphore.Release();
-        //     }
-        // }
+
     }
 }

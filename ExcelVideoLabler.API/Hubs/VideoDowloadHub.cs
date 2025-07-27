@@ -1,10 +1,11 @@
+using ExcelVideoLabler.API.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ExcelVideoLabler.API.Hubs
 {
     public interface IVideoDowloadHub
     {
-        Task RecieveTotalVideo(int totalDownloadsSuccess, int totalDownloadsFailed);
+        Task RecieveTotalVideo(ResultDownloadVideo  result);
     }
     
     public class VideoDowloadHub : Hub<IVideoDowloadHub>

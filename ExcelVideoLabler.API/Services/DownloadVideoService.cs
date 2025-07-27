@@ -17,14 +17,14 @@ namespace ExcelVideoLabler.API.Services
             {
                 return false;
             }
+            
+            string folderPath = Path.Combine(environment.WebRootPath, FolderConstants.VideoFolder);
+            Directory.CreateDirectory(folderPath);
+
+            string savePath = Path.Combine(folderPath, $"{transId}.mp4");
 
             try
             {
-                string folderPath = Path.Combine(environment.WebRootPath, FolderConstants.VideoFolder, transId);
-                Directory.CreateDirectory(folderPath);
-
-                string savePath = Path.Combine(folderPath, "video.mp4");
-
                 using HttpClient client = new HttpClient();
                 using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
@@ -36,14 +36,16 @@ namespace ExcelVideoLabler.API.Services
                 int bytesRead;
                 while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                 {
-                    await fs.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+                    await fs.WriteAsync(buffer, 0, bytesRead);
                 }
 
                 return true;
             }
             catch (OperationCanceledException)
             {
-                // Xử lý nếu bị hủy giữa chừng
+                if (!File.Exists(savePath))
+                    return false;
+                File.Delete(savePath);
                 return false;
             }
             catch (Exception)

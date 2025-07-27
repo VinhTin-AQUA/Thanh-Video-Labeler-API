@@ -1,3 +1,4 @@
+using ExcelVideoLabler.API.Hubs;
 using ExcelVideoLabler.API.Services;
 
 namespace ExcelVideoLabler.API.Extensions
@@ -10,6 +11,8 @@ namespace ExcelVideoLabler.API.Extensions
             services.AddSingleton<DownloadVideoService>();
             services.AddSingleton<FileService>();
             services.AddSingleton<VideoExcelService>();
+            
+           services.AddSingleton<VideoDowloadHubService>();
         }
     }
 }
