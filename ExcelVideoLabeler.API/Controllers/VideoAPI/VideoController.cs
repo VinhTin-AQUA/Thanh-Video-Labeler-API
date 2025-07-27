@@ -1,6 +1,7 @@
 using Aspose.Cells;
 using ExcelVideoLabler.API.Constants;
 using ExcelVideoLabler.API.Controllers.Common;
+using ExcelVideoLabler.API.Controllers.VideoAPI.Payload;
 using ExcelVideoLabler.API.Hubs;
 using ExcelVideoLabler.API.Models;
 using ExcelVideoLabler.API.Services;
@@ -350,7 +351,60 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                 Message = "Dừng tải video."
             });
         }
-             
+
+        [HttpGet]
+        public async Task<IActionResult> Filter(string? transIdOrPayment, bool? label, bool? noLabel, int page = 1,
+            int pageSize = 20)
+        {
+            QueryOptionsBuilder<VideoInfo> queryOptionBuilder = new();
+            queryOptionBuilder.Skip(pageSize * (page - 1));
+            queryOptionBuilder.Take(pageSize);
+            if (!string.IsNullOrEmpty(transIdOrPayment))
+            {
+                queryOptionBuilder.Where(v => v.TransID.ToLower().Contains(transIdOrPayment.ToLower()) ||
+                                              v.Payment.ToLower().Contains(transIdOrPayment.ToLower()));
+            }
+
+            if (label != null)
+            {
+                if (label.Value == true)
+                {
+                    queryOptionBuilder.Where(x => string.IsNullOrEmpty(x.Label) == false);
+                }
+            }
+            
+            if (noLabel != null)
+            {
+                if (noLabel.Value == true)
+                {
+                    queryOptionBuilder.Where(x => string.IsNullOrEmpty(x.Label) == true);
+                }
+            }
+            var list = await videoInfoQueryRepository.FilterAsync(queryOptionBuilder.Build());
+            return Ok(
+                new ApiResponse<List<VideoInfo>>()
+                {
+                    Data = list,
+                    Message = "",
+                });
+        }
+
+        public async Task<IActionResult> UpdateVideo(UpdateVideo model)
+        {
+            var video = await videoInfoQueryRepository.GetByIdAsync(model.Id);
+            if (video == null)
+            {
+                return BadRequest(new ApiResponse<object>()
+                {
+                    Message = "Không tìm thấy video."
+                });
+            }
+            video.Label =  model.Label;
+            await videoInfoCommandRepository.UpdateAsync(video);
+            
+            return Ok();
+        }
+        
         #region private methods
 
         private async Task UpdateConfig(Config newConfig)

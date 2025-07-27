@@ -23,7 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\VideoAPI\Payload\" />
       <Folder Include="MapperProfiles\" />
       <Folder Include="wwwroot\" />
       <Folder Include="wwwroot\ExcelFolder\" />
