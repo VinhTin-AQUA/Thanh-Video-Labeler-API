@@ -55,29 +55,6 @@ namespace ExcelVideoLabler.API.Services
         }
 
         
-        // public async Task<bool> StartDownloadingAsync(string url, string transId)
-        // {
-        //     if (!url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
-        //     {
-        //         return false;
-        //     }
-        //     
-        //     try
-        //     {
-        //         string savePath = Path.Combine(environment.WebRootPath, FolderConstants.VideoFolder, transId, ".mp4");
-        //         
-        //         using HttpClient client = new HttpClient();
-        //         using HttpResponseMessage response = await client.GetAsync(url);
-        //         response.EnsureSuccessStatusCode();
-        //
-        //         using FileStream fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        //         await response.Content.CopyToAsync(fs);
-        //         return true;
-        //     }
-        //     catch (Exception)
-        //     {
-        //         return false;
-        //     }
-        // }
+      
     }
 }

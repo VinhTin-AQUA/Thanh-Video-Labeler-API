@@ -15,7 +15,13 @@ namespace ExcelVideoLabler.API.Hubs
         public async Task RecieveTotalVideo(ResultDownloadVideo resultDownloadVideo)
         {
            await videoDowloadHub.Clients.Client(VideoDowloadHub.ConnectionId)
-                .RecieveTotalVideo(resultDownloadVideo);
+                .RecieveResultDownloadVideo(resultDownloadVideo);
+        }
+        
+        public async Task SendDownloadFinish(bool isFinish)
+        {
+            await videoDowloadHub.Clients.Client(VideoDowloadHub.ConnectionId)
+                .SendDownloadFinish(isFinish);
         }
     }
 }
