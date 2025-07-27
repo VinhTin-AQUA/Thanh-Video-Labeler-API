@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ExcelVideoLabeler.Infrastructure\ExcelVideoLabeler.Infrastructure.csproj" />
-      <ProjectReference Include="..\ExcelVideoLabler.Infrastructure\ExcelVideoLabler.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

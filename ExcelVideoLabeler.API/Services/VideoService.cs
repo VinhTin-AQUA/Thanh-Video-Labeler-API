@@ -17,6 +17,7 @@ namespace ExcelVideoLabeler.API.Services
         {
             if (!url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
             {
+                
                 return false;
             }
             
@@ -48,13 +49,14 @@ namespace ExcelVideoLabeler.API.Services
             }
             catch (OperationCanceledException)
             {
-                if (!File.Exists(savePath))
-                    return false;
-                File.Delete(savePath);
+                string infoPath = Path.Combine(folderPath, $"{transId}.txt");
+                RemoveErrorFileAndVideo(savePath, infoPath);
                 return false;
             }
             catch (Exception)
             {
+                string infoPath = Path.Combine(folderPath, $"{transId}.txt");
+                RemoveErrorFileAndVideo(savePath, infoPath);
                 return false;
             }
         }
@@ -75,7 +77,20 @@ namespace ExcelVideoLabeler.API.Services
                 {
                     return;
                 }
-                writer.WriteLine($"{prop.Name}: {value}");
+                await writer.WriteLineAsync($"{prop.Name}: {value}");
+            }
+        }
+
+        private void RemoveErrorFileAndVideo(string videPath, string infoPath)
+        {
+            if (File.Exists(videPath))
+            {
+                File.Delete(videPath);
+            }
+                
+            if (File.Exists(infoPath))
+            {
+                File.Delete(infoPath);
             }
         }
     }

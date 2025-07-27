@@ -282,10 +282,10 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                                             Link = video.Link,
                                             TransId = video.TransID,
                                         });
+                                        await _VideoService.SaveFileVideoInfo(video);
                                     }
                                     
                                     await _videoInfoCommandRepository.UpdateAsync(video);
-                                    await _VideoService.SaveFileVideoInfo(video);
                                 }
                                 catch (Exception ex)
                                 {
