@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace ExcelVideoLabler.API.Hubs
 {
-    public class VideoDowloadHubService
+    public class VideoDownloadHubService
     {
         private readonly IHubContext<VideoDowloadHub, IVideoDowloadHub> videoDowloadHub;
 
-        public VideoDowloadHubService(IHubContext<VideoDowloadHub, IVideoDowloadHub>  videoDowloadHub)
+        public VideoDownloadHubService(IHubContext<VideoDowloadHub, IVideoDowloadHub>  videoDowloadHub)
         {
             this.videoDowloadHub = videoDowloadHub;
         }

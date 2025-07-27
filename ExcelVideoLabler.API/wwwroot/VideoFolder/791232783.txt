@@ -1,0 +1,38 @@
+TransID: 791232783
+TransNB: 100902765554
+TotalAmount: -31.86
+DVRStart: 54:27.0
+Channel: 6
+StartShift: 46:15.1
+EndShift: 03:53.7
+EmployeeID: 1292249
+RegisterName: 276
+LoyaltyCard: NaN
+SiteName: BED
+SiteEmployee: BED001292249
+ExceptionAmount: 31.86
+TOperatorID: 24378
+TPACID: 878
+City: Bedford
+RegionName: NI - Anthony Auciello
+Division: NI
+ExceptionType: Return at SC, Cash Refund > $25, Return exclude Bag & Bottle
+Payment: CASH
+CardNo: NaN
+Desc: Return: CF ROSE 40CM 24ST | -1 | -29.9900
+Link: https://s3.amazonaws.com/i3.wholefoods/CMSWeb/KDVRs_878/2c91fb26-5065-4e0a-afbe-aefafefebb3b/2303069_C06_Booth_20250509_195425/2303069_C06_Booth_20250509_195425.mp4
+Label: Normal
+TransDate: 5/9/2025 19:54
+Assign: Thanh
+HighRisk: 0
+PreTransID: 790057805
+PreTransDate: 54:21.9
+PreTotalAmount: 0
+HasRedeemLater: NaN
+YPredProba: 0.297465
+Bucket: 1
+BucketSmall: 3
+TransDateWeekdayMask: 5
+TransDateFormatted: 9/5/2025
+VideoStatus: Downloaded
+Id: 1657

@@ -1,0 +1,38 @@
+TransID: 791128680
+TransNB: 101372766945
+TotalAmount: -42
+DVRStart: 20:15.0
+Channel: 12
+StartShift: 14:33.9
+EndShift: 29:58.0
+EmployeeID: 1179440
+RegisterName: 276
+LoyaltyCard: NaN
+SiteName: SEB
+SiteEmployee: SEB001179440
+ExceptionAmount: 42
+TOperatorID: 18567
+TPACID: 610
+City: Sebastopol
+RegionName: CA - Robert Bohen
+Division: CA
+ExceptionType: Bottle Refund > $15
+Payment: NaN
+CardNo: NaN
+Desc: Return: BOTTLE DEP REFUND | -14 | -42.0000
+Link: https://s3.amazonaws.com/i3.wholefoods/CMSWeb/KDVRs_610/255e1874-f9f4-4bcb-acfd-03fd95e31877/2302089_C12_Customer_Service_20250509_162013/2302089_C12_Customer_Service_20250509_162013.mp4
+Label: Normal
+TransDate: 5/9/2025 16:20
+Assign: Tran
+HighRisk: 0
+PreTransID: 790027364
+PreTransDate: 19:49.6
+PreTotalAmount: 0
+HasRedeemLater: NaN
+YPredProba: 0.32423
+Bucket: 1
+BucketSmall: 3
+TransDateWeekdayMask: 5
+TransDateFormatted: 9/5/2025
+VideoStatus: Downloaded
+Id: 1658

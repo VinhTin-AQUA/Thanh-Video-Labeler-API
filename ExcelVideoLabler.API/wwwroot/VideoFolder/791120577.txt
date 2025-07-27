@@ -1,0 +1,38 @@
+TransID: 791120577
+TransNB: 1010127639098
+TotalAmount: -24
+DVRStart: 58:23.0
+Channel: 23
+StartShift: 58:11.0
+EndShift: 03:06.7
+EmployeeID: 2304201
+RegisterName: 276
+LoyaltyCard: NaN
+SiteName: WAL
+SiteEmployee: WAL002304201
+ExceptionAmount: 24
+TOperatorID: 22940
+TPACID: 604
+City: Walnut Creek
+RegionName: CA - David Stanley
+Division: CA
+ExceptionType: Bottle Refund > $15
+Payment: NaN
+CardNo: NaN
+Desc: Return: BOTTLE DEP REFUND | -8 | -24.0000
+Link: https://s3.amazonaws.com/i3.wholefoods/CMSWeb/KDVRs_604/2346212d-3be0-4d29-8919-3e77df7f7733/2302083_C23_Customer_Service_20250509_115821/2302083_C23_Customer_Service_20250509_115821.mp4
+Label: Normal
+TransDate: 5/9/2025 11:58
+Assign: Tran
+HighRisk: 0
+PreTransID: 790025558
+PreTransDate: 58:16.1
+PreTotalAmount: 0
+HasRedeemLater: NaN
+YPredProba: 0.240161
+Bucket: 1
+BucketSmall: 2
+TransDateWeekdayMask: 5
+TransDateFormatted: 9/5/2025
+VideoStatus: Downloaded
+Id: 1656

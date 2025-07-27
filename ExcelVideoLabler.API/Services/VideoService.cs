@@ -1,17 +1,19 @@
+using System.Reflection;
 using ExcelVideoLabler.API.Constants;
+using ExcelVideoLabler.Domain.Entities;
 
 namespace ExcelVideoLabler.API.Services
 {
-    public class DownloadVideoService
+    public class VideoService
     {
         private readonly IWebHostEnvironment environment;
 
-        public DownloadVideoService(IWebHostEnvironment environment)
+        public VideoService(IWebHostEnvironment environment)
         {
             this.environment = environment;
         }
         
-        public async Task<bool> StartDownloadingAsync(string url, string transId, CancellationToken cancellationToken)
+        public async Task<bool> DownloadVideo(string url, string transId, CancellationToken cancellationToken)
         {
             if (!url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
             {
@@ -19,7 +21,10 @@ namespace ExcelVideoLabler.API.Services
             }
             
             string folderPath = Path.Combine(environment.WebRootPath, FolderConstants.VideoFolder);
-            Directory.CreateDirectory(folderPath);
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
 
             string savePath = Path.Combine(folderPath, $"{transId}.mp4");
 
@@ -54,7 +59,24 @@ namespace ExcelVideoLabler.API.Services
             }
         }
 
-        
-      
+        public async Task SaveFileVideoInfo(VideoInfo  videoInfo)
+        {
+            string folderPath = Path.Combine(environment.WebRootPath, FolderConstants.VideoFolder);
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            using StreamWriter writer = new StreamWriter(Path.Combine(folderPath, videoInfo.TransID + ".txt"));
+            foreach (PropertyInfo prop in typeof(VideoInfo).GetProperties())
+            {
+                object? value = prop.GetValue(videoInfo, null);
+                if (value == null)
+                {
+                    return;
+                }
+                writer.WriteLine($"{prop.Name}: {value}");
+            }
+        }
     }
 }

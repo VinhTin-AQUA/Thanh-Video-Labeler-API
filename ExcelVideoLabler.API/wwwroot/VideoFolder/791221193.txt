@@ -1,0 +1,38 @@
+TransID: 791221193
+TransNB: 102332016783
+TotalAmount: -30
+DVRStart: 42:00.0
+Channel: 2
+StartShift: 22:45.0
+EndShift: 04:52.0
+EmployeeID: 1222351
+RegisterName: 201
+LoyaltyCard: NaN
+SiteName: WOB
+SiteEmployee: WOB001222351
+ExceptionAmount: 30
+TOperatorID: 26088
+TPACID: 866
+City: Woburn
+RegionName: NI - Anthony Auciello
+Division: NI
+ExceptionType: Bottle Refund > $15
+Payment: NaN
+CardNo: NaN
+Desc: Return: BOTTLE DEP REFUND | -10 | -30.0000
+Link: https://s3.amazonaws.com/i3.wholefoods/CMSWeb/KDVRs_866/4212c6d0-203b-4b44-8ed1-d0e817f33f3d/2303099_C02_Reg_1_Booth_20250509_134158/2303099_C02_Reg_1_Booth_20250509_134158.mp4
+Label: Normal
+TransDate: 5/9/2025 13:42
+Assign: Thanh
+HighRisk: 1
+PreTransID: 791221197
+PreTransDate: 38:34.0
+PreTotalAmount: 56.23
+HasRedeemLater: NaN
+YPredProba: 0.35372
+Bucket: 1
+BucketSmall: 3
+TransDateWeekdayMask: 5
+TransDateFormatted: 9/5/2025
+VideoStatus: Downloaded
+Id: 1661

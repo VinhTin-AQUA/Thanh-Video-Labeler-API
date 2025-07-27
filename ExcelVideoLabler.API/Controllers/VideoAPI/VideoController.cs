@@ -20,12 +20,12 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
     {
         private readonly ConfigService configService;
         private readonly VideoExcelService videoExcelService;
-        private readonly DownloadVideoService downloadVideoService;
+        private readonly VideoService videoService;
         private readonly IVideoInfoQueryRepository videoInfoQueryRepository;
         private readonly IVideoInfoCommandRepository videoInfoCommandRepository;
         private readonly IConfigCommandRepository configCommandRepository;
-        private readonly VideoDowloadHubService videoDowloadHubService;
-        private readonly IHubContext<VideoDowloadHub, IVideoDowloadHub> videoDowloadHub;
+        private readonly VideoDownloadHubService videoDownloadHubService;
+        private readonly IServiceScopeFactory scopeFactory;
         private readonly IWebHostEnvironment env;
 
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -36,22 +36,22 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
         public VideoController(
             ConfigService configService,
             VideoExcelService videoExcelService,
-            DownloadVideoService downloadVideoService,
+            VideoService videoService,
             IVideoInfoQueryRepository videoInfoQueryRepository,
             IVideoInfoCommandRepository  videoInfoCommandRepository,
             IConfigCommandRepository configCommandRepository,
-            VideoDowloadHubService videoDowloadHubService,
-            IHubContext<VideoDowloadHub, IVideoDowloadHub>  videoDowloadHub, 
+            VideoDownloadHubService videoDownloadHubService,
+            IServiceScopeFactory scopeFactory,
             IWebHostEnvironment env)
         {
             this.configService = configService;
             this.videoExcelService = videoExcelService;
-            this.downloadVideoService = downloadVideoService;
+            this.videoService = videoService;
             this.videoInfoQueryRepository = videoInfoQueryRepository;
             this.videoInfoCommandRepository = videoInfoCommandRepository;
             this.configCommandRepository = configCommandRepository;
-            this.videoDowloadHubService = videoDowloadHubService;
-            this.videoDowloadHub = videoDowloadHub;
+            this.videoDownloadHubService = videoDownloadHubService;
+            this.scopeFactory = scopeFactory;
             this.env = env;
         }
 
@@ -199,9 +199,9 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
         {
             if (_isDownloading)
             {
-                return BadRequest(new ApiResponse<object>
+                return Ok (new ApiResponse<object>
                 {
-                    Message = "Đang tải video. Vui lòng đợi hoàn tất hoặc dừng quá trình hiện tại."
+                    Message = "Quá trình tải video đang thực hiện."
                 });
             }
             
@@ -210,7 +210,6 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
             _isDownloading = true;
             _cancelRequested = false;
             var token = cts.Token;
-            
 
             try
             {
@@ -218,10 +217,30 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                 queryOptionBuilder.Where(x => x.VideoStatus == VideoStatus.Pending);
                 var listVideo = await videoInfoQueryRepository.FilterAsync(queryOptionBuilder.Build());
                 int total = listVideo.Count;
+
+                if (total == 0)
+                {
+                    _isDownloading = false;
+                    cts.Cancel();
+                    return Ok(new ApiResponse<object>
+                    {
+                        Data = new
+                        {
+                            Total = total,
+                        },
+                        Message = "Tất cả video đã được tải."
+                    });
+                }
+                
                 int maxConcurrentDownloads = 3; // Số video tải đồng thời
                 
                 _ = Task.Run(async () =>
                 {
+                    using var scope = scopeFactory.CreateScope();
+                    var _VideoService = scope.ServiceProvider.GetRequiredService<VideoService>();
+                    var _videoInfoCommandRepository = scope.ServiceProvider.GetRequiredService<IVideoInfoCommandRepository>();
+                    var _videoDownloadHubService = scope.ServiceProvider.GetRequiredService<VideoDownloadHubService>();
+                    
                     var semaphoreSlim = new SemaphoreSlim(maxConcurrentDownloads);
                     var downloadTasks = new List<Task>();
                     int totalSuccess = 0;
@@ -242,13 +261,13 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                                 try
                                 {
                                     var video = listVideo[index];
-                                    bool check = await downloadVideoService.StartDownloadingAsync(video.Link, video.TransID, token);
+                                    bool check = await _VideoService.DownloadVideo(video.Link, video.TransID, token);
 
                                     if (!check)
                                     {
                                         video.VideoStatus = VideoStatus.ErrorLink;
                                         Interlocked.Increment(ref totalFailed);
-                                        await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
+                                        await _videoDownloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
                                         {
                                             IsSuccess = false,
                                             TotalDownloadsSuccess = 0,
@@ -261,7 +280,7 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                                     {
                                         video.VideoStatus = VideoStatus.Downloaded;
                                         Interlocked.Increment(ref totalSuccess);
-                                        await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
+                                        await _videoDownloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
                                         {
                                             IsSuccess = true,
                                             TotalDownloadsSuccess = 1,
@@ -270,6 +289,9 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                                             TransId = video.TransID,
                                         });
                                     }
+                                    
+                                    await _videoInfoCommandRepository.UpdateAsync(video);
+                                    await _VideoService.SaveFileVideoInfo(video);
                                 }
                                 catch (Exception ex)
                                 {
@@ -283,9 +305,7 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
 
                             downloadTasks.Add(task);
                         }
-
                         await Task.WhenAll(downloadTasks);
-                        await videoInfoCommandRepository.UpdateRangeAsync(listVideo);
                     }
                     catch (Exception ex)
                     {
@@ -293,69 +313,11 @@ namespace ExcelVideoLabler.API.Controllers.VideoAPI
                     }
                     finally
                     {
+                        await _videoDownloadHubService.SendDownloadFinish(true);
                         _isDownloading = false;
                         _semaphore.Release();
                     }
                 });
-
-                #region tải 1 video.
-
-               
-                // _ = Task.Run(async () =>
-                // {
-                //     try
-                //     {
-                //         for (int i = 0; i < total; i++)
-                //         {
-                //             if (_cancelRequested || token.IsCancellationRequested)
-                //             {
-                //                 // await videoDowloadHubService.RecieveTotalVideo(0, total - i);
-                //                 break;
-                //             }
-                //
-                //             bool check = await downloadVideoService.StartDownloadingAsync(listVideo[i].Link, listVideo[i].TransID, token);
-                //
-                //             if (!check)
-                //             {
-                //                 listVideo[i].VideoStatus = VideoStatus.ErrorLink;
-                //                 await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
-                //                 {
-                //                     IsSuccess = false,
-                //                     TotalDownloadsSuccess =0,
-                //                     TotalDownloadsFailed = 1,
-                //                     Link = listVideo[i].Link,
-                //                     TransId = listVideo[i].TransID, 
-                //                 });
-                //                 
-                //                 continue;
-                //             }
-                //
-                //             listVideo[i].VideoStatus = VideoStatus.Downloaded;
-                //             await videoDowloadHubService.RecieveTotalVideo(new ResultDownloadVideo()
-                //             {
-                //                 IsSuccess = true,
-                //                 TotalDownloadsSuccess = 1,
-                //                 TotalDownloadsFailed = 0,
-                //                 Link = listVideo[i].Link,
-                //                 TransId = listVideo[i].TransID, 
-                //             });
-                //         }
-                //         await videoInfoCommandRepository.UpdateRangeAsync(listVideo);
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         // Ghi log nếu cần
-                //         Console.WriteLine($"Lỗi trong background download: {ex.Message}");
-                //     }
-                //     finally
-                //     {
-                //         _isDownloading = false;
-                //         _semaphore.Release();
-                //     }
-                // });
-
-                #endregion
-                
 
                 return Ok(new ApiResponse<object>
                 {

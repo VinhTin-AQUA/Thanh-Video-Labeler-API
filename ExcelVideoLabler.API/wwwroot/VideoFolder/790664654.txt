@@ -1,0 +1,38 @@
+TransID: 790664654
+TransNB: 107492762326
+TotalAmount: -24
+DVRStart: 59:52.0
+Channel: 14
+StartShift: 40:48.0
+EndShift: 42:09.0
+EmployeeID: 2471231
+RegisterName: 276
+LoyaltyCard: NaN
+SiteName: MQA
+SiteEmployee: MQA002471231
+ExceptionAmount: 24
+TOperatorID: 35204
+TPACID: 376
+City: Massapequa
+RegionName: NE - Bobby Thompson
+Division: NE Northeast
+ExceptionType: Bottle Refund > $15
+Payment: NaN
+CardNo: NaN
+Desc: Return: BOTTLE DEP REFUND | -8 | -24.0000
+Link: https://s3.amazonaws.com/i3.wholefoods/CMSWeb/KDVRs_376/75c808e0-76d4-400a-b618-aa525c3d5912/2107065_C14_Customer_Servrice_20250509_175950/2107065_C14_Customer_Servrice_20250509_175950.mp4
+Label: Normal
+TransDate: 00:05.0
+Assign: Thanh
+HighRisk: 0
+PreTransID: 790664652
+PreTransDate: 58:24.0
+PreTotalAmount: 36.65
+HasRedeemLater: NaN
+YPredProba: 0.37239
+Bucket: 1
+BucketSmall: 3
+TransDateWeekdayMask: 5
+TransDateFormatted: 9/5/2025
+VideoStatus: Downloaded
+Id: 1663

@@ -8,11 +8,11 @@ namespace ExcelVideoLabler.API.Extensions
         public static void AddServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton<ConfigService>();
-            services.AddSingleton<DownloadVideoService>();
+            services.AddSingleton<VideoService>();
             services.AddSingleton<FileService>();
             services.AddSingleton<VideoExcelService>();
             
-           services.AddSingleton<VideoDowloadHubService>();
+           services.AddSingleton<VideoDownloadHubService>();
         }
     }
 }

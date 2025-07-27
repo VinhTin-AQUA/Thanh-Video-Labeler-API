@@ -1,0 +1,38 @@
+TransID: 790636069
+TransNB: 1013227625025
+TotalAmount: -4.12
+DVRStart: 42:49.0
+Channel: 15
+StartShift: 50:41.8
+EndShift: 27:36.2
+EmployeeID: 1309948
+RegisterName: 276
+LoyaltyCard: NaN
+SiteName: CAR
+SiteEmployee: CAR001309948
+ExceptionAmount: 4.04
+TOperatorID: 9766
+TPACID: 355
+City: Cary
+RegionName: SE - John Hudson
+Division: SE Southeast
+ExceptionType: Return at SC, Return exclude Bag & Bottle
+Payment: CASH
+CardNo: NaN
+Desc: Return: BEEF GROUND 85/15 GRS S4 | -0.54 | -4.0400
+Link: https://s3.amazonaws.com/i3.wholefoods/CMSWeb/KDVRs_355/89992b51-2378-41a0-a434-361d24cf7df4/2012002_C15_Customer_Service_20250509_194247/2012002_C15_Customer_Service_20250509_194247.mp4
+Label: normal
+TransDate: 5/9/2025 19:43
+Assign: Tran
+HighRisk: 0
+PreTransID: 789886125
+PreTransDate: 42:34.0
+PreTotalAmount: 0
+HasRedeemLater: NaN
+YPredProba: 0.363016
+Bucket: 1
+BucketSmall: 3
+TransDateWeekdayMask: 5
+TransDateFormatted: 9/5/2025
+VideoStatus: ErrorLink
+Id: 1662

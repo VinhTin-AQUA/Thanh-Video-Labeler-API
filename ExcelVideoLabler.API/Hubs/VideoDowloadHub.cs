@@ -5,7 +5,9 @@ namespace ExcelVideoLabler.API.Hubs
 {
     public interface IVideoDowloadHub
     {
-        Task RecieveTotalVideo(ResultDownloadVideo  result);
+        Task RecieveResultDownloadVideo(ResultDownloadVideo  result);
+
+        Task SendDownloadFinish(bool isFinish);
     }
     
     public class VideoDowloadHub : Hub<IVideoDowloadHub>
