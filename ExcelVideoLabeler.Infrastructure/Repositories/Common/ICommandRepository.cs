@@ -15,5 +15,6 @@ namespace ExcelVideoLabeler.Infrastructure.Repositories.Common
         Task<ICollection<T>> UpdateRangeAsync(ICollection<T> entities);
         
         Task<bool> DeleteRangeAsync(ICollection<T> entities);
+        
     }
 }
