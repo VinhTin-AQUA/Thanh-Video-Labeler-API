@@ -1,7 +1,7 @@
-using ExcelVideoLabler.Infrastructure.Repositories.ConfigRepository;
-using ExcelVideoLabler.Infrastructure.Repositories.VideoInfoRepository;
+using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
+using ExcelVideoLabeler.Infrastructure.Repositories.VideoInfoRepository;
 
-namespace ExcelVideoLabler.API.Extensions
+namespace ExcelVideoLabeler.API.Extensions
 {
     public static class RepositoryExtension
     {

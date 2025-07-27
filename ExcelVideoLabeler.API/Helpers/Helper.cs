@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Helpers
+namespace ExcelVideoLabeler.API.Helpers
 {
     public class Helper
     {

@@ -1,7 +1,7 @@
-using ExcelVideoLabler.API.Extensions;
-using ExcelVideoLabler.API.Hubs;
-using ExcelVideoLabler.API.Middlewares;
-using ExcelVideoLabler.API.Services;
+using ExcelVideoLabeler.API.Extensions;
+using ExcelVideoLabeler.API.Hubs;
+using ExcelVideoLabeler.API.Middlewares;
+using ExcelVideoLabeler.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

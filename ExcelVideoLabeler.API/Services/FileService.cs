@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Services
+namespace ExcelVideoLabeler.API.Services
 {
     public class FileService
     {

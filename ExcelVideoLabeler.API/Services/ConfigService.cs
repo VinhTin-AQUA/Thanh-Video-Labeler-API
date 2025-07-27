@@ -1,7 +1,7 @@
-using ExcelVideoLabler.Domain.Entities;
-using ExcelVideoLabler.Infrastructure.Repositories.ConfigRepository;
+using ExcelVideoLabeler.Domain.Entities;
+using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
 
-namespace ExcelVideoLabler.API.Services
+namespace ExcelVideoLabeler.API.Services
 {
     public class ConfigService
     {

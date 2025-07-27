@@ -1,7 +1,7 @@
-using ExcelVideoLabler.API.Hubs;
-using ExcelVideoLabler.API.Services;
+using ExcelVideoLabeler.API.Hubs;
+using ExcelVideoLabeler.API.Services;
 
-namespace ExcelVideoLabler.API.Extensions
+namespace ExcelVideoLabeler.API.Extensions
 {
     public static class ServiceExtension
     {

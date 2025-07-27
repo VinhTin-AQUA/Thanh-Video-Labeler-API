@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Controllers.Common
+namespace ExcelVideoLabeler.API.Controllers.Common
 {
     public class ApiResponse<T>
     {

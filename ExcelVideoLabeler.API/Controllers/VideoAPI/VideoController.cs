@@ -1,19 +1,19 @@
 using Aspose.Cells;
-using ExcelVideoLabler.API.Constants;
-using ExcelVideoLabler.API.Controllers.Common;
-using ExcelVideoLabler.API.Controllers.VideoAPI.Payload;
-using ExcelVideoLabler.API.Hubs;
-using ExcelVideoLabler.API.Models;
-using ExcelVideoLabler.API.Services;
-using ExcelVideoLabler.Domain.Entities;
-using ExcelVideoLabler.Domain.Enums;
-using ExcelVideoLabler.Infrastructure.Repositories.ConfigRepository;
-using ExcelVideoLabler.Infrastructure.Repositories.Models;
-using ExcelVideoLabler.Infrastructure.Repositories.VideoInfoRepository;
+using ExcelVideoLabeler.API.Constants;
+using ExcelVideoLabeler.API.Controllers.Common;
+using ExcelVideoLabeler.API.Controllers.VideoAPI.Payload;
+using ExcelVideoLabeler.API.Hubs;
+using ExcelVideoLabeler.API.Models;
+using ExcelVideoLabeler.API.Services;
+using ExcelVideoLabeler.Domain.Entities;
+using ExcelVideoLabeler.Domain.Enums;
+using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
+using ExcelVideoLabeler.Infrastructure.Repositories.Models;
+using ExcelVideoLabeler.Infrastructure.Repositories.VideoInfoRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ExcelVideoLabler.API.Controllers.VideoAPI
+namespace ExcelVideoLabeler.API.Controllers.VideoAPI
 {
     [Route("api/[controller]/[action]")]
     [ApiController]

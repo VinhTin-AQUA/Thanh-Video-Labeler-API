@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Exceptions
+namespace ExcelVideoLabeler.API.Exceptions
 {
     public class Exception
     {

@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Controllers.UploadAPI.Payload
+namespace ExcelVideoLabeler.API.Controllers.UploadAPI.Payload
 {
     public class UploadFile
     {

@@ -1,8 +1,8 @@
 using System.Reflection;
-using ExcelVideoLabler.API.Constants;
-using ExcelVideoLabler.Domain.Entities;
+using ExcelVideoLabeler.API.Constants;
+using ExcelVideoLabeler.Domain.Entities;
 
-namespace ExcelVideoLabler.API.Services
+namespace ExcelVideoLabeler.API.Services
 {
     public class VideoService
     {

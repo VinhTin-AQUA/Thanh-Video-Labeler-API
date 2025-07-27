@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace ExcelVideoLabler.API.Controllers.HealthAPI
+namespace ExcelVideoLabeler.API.Controllers.HealthAPI
 {
     [ApiController]
     [Route("api/[controller]/[action]")]

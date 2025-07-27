@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Models
+namespace ExcelVideoLabeler.API.Models
 {
     public class ResultDownloadVideo
     {

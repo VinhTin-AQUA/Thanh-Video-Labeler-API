@@ -1,9 +1,9 @@
 using Aspose.Cells;
-using ExcelVideoLabler.API.Constants;
-using ExcelVideoLabler.Domain.Entities;
-using ExcelVideoLabler.Domain.Enums;
+using ExcelVideoLabeler.API.Constants;
+using ExcelVideoLabeler.Domain.Entities;
+using ExcelVideoLabeler.Domain.Enums;
 
-namespace ExcelVideoLabler.API.Services
+namespace ExcelVideoLabeler.API.Services
 {
     public class VideoExcelService
     {

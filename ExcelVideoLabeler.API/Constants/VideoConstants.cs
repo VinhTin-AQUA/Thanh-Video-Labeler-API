@@ -1,4 +1,4 @@
-namespace ExcelVideoLabler.API.Constants
+namespace ExcelVideoLabeler.API.Constants
 {
     public class VideoConstants
     {

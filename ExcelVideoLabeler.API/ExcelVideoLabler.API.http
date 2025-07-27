@@ -1,6 +1,6 @@
-@ExcelVideoLabler.API_HostAddress = http://localhost:5195
+@ExcelVideoLabeler.API_HostAddress = http://localhost:5195
 
-GET {{ExcelVideoLabler.API_HostAddress}}/weatherforecast/
+GET {{ExcelVideoLabeler.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

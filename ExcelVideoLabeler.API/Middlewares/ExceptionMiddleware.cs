@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace ExcelVideoLabler.API.Middlewares
+namespace ExcelVideoLabeler.API.Middlewares
 {
     public class ExceptionMiddleware
     {

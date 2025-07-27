@@ -1,7 +1,7 @@
-using ExcelVideoLabler.Infrastructure.DataContext;
+using ExcelVideoLabeler.Infrastructure.DataContext;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExcelVideoLabler.API.Extensions
+namespace ExcelVideoLabeler.API.Extensions
 {
     public static class DbContextExtension
     {

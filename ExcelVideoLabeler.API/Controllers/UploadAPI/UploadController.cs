@@ -1,13 +1,13 @@
-using ExcelVideoLabler.API.Constants;
-using ExcelVideoLabler.API.Controllers.Common;
-using ExcelVideoLabler.API.Controllers.UploadAPI.Payload;
-using ExcelVideoLabler.API.Services;
-using ExcelVideoLabler.Domain.Entities;
-using ExcelVideoLabler.Infrastructure.Repositories.ConfigRepository;
-using ExcelVideoLabler.Infrastructure.Repositories.VideoInfoRepository;
+using ExcelVideoLabeler.API.Constants;
+using ExcelVideoLabeler.API.Controllers.Common;
+using ExcelVideoLabeler.API.Controllers.UploadAPI.Payload;
+using ExcelVideoLabeler.API.Services;
+using ExcelVideoLabeler.Domain.Entities;
+using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
+using ExcelVideoLabeler.Infrastructure.Repositories.VideoInfoRepository;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ExcelVideoLabler.API.Controllers.UploadAPI
+namespace ExcelVideoLabeler.API.Controllers.UploadAPI
 {
     [Route("api/[controller]/[action]")]
     [ApiController]

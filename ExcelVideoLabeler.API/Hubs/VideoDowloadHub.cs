@@ -1,7 +1,7 @@
-using ExcelVideoLabler.API.Models;
+using ExcelVideoLabeler.API.Models;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ExcelVideoLabler.API.Hubs
+namespace ExcelVideoLabeler.API.Hubs
 {
     public interface IVideoDowloadHub
     {
