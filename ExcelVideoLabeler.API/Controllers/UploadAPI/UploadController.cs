@@ -40,7 +40,6 @@ namespace ExcelVideoLabeler.API.Controllers.UploadAPI
                     Message = "File không hợp lệ."
                 });
             }
-
             string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder);
             if (!uploadFile.IsAccepted && System.IO.File.Exists(Path.Combine(filePath, uploadFile.File.FileName)))
             {

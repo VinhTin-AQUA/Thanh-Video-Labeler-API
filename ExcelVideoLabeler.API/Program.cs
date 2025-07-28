@@ -19,7 +19,7 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(c =>
 {
     c.AddPolicy("AllowOrigin", option => option
-        .WithOrigins("http://localhost:4200")
+        .WithOrigins("http://localhost:4200", "https://thanh-video-labeler-app.vercel.app")
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials());
@@ -48,7 +48,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowOrigin");
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
