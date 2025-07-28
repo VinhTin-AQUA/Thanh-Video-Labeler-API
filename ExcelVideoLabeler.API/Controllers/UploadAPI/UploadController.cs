@@ -37,7 +37,7 @@ namespace ExcelVideoLabeler.API.Controllers.UploadAPI
                 return BadRequest(new ApiResponse<object>()
                 {
                     Data = null,
-                    Message = "File không hợp lệ."
+                    Message = "File is invalid."
                 });
             }
             string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder);
@@ -49,7 +49,7 @@ namespace ExcelVideoLabeler.API.Controllers.UploadAPI
                     {
                         IsAccepted = !uploadFile.IsAccepted,
                     },
-                    Message = "File hiện đã tồn tại trong hệ thống. Nếu tiếp tục upload dữ liệu cũ sẽ mất."
+                    Message = "The file already exists in the system. If you continue to upload, the old data will be lost."
                 });
             }
             
@@ -67,7 +67,7 @@ namespace ExcelVideoLabeler.API.Controllers.UploadAPI
             return Ok(new ApiResponse<object>
             {
                 Data = null,
-                Message = "Upload thành công."
+                Message = "Upload Successfully."
             });
         }
     }

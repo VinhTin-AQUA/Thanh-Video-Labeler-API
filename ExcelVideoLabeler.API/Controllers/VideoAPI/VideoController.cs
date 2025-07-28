@@ -62,7 +62,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                         SheetName = "",
                         StartRowInSheet = -1,
                     },
-                    Message = "File không tồn tại. Vui lòng upload file."
+                    Message = "File is not exists. Config filename is empty."
                 });
             }
             
@@ -78,7 +78,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                         SheetName = "",
                         StartRowInSheet = -1,
                     },
-                    Message = "File không tồn tại. Vui lòng upload file."
+                    Message = "File is not exists. File path is not exists."
                 });
             }
             
@@ -97,7 +97,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                     SheetName = sheet.Name,
                     StartRowInSheet = ConfigService.Config.RowIndex,
                 },
-                Message = "File không tồn tại. Vui lòng upload file."
+                Message = ""
             });
         }
 
@@ -109,7 +109,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 return BadRequest(new ApiResponse<object>()
                 {
                     Data = null,
-                    Message = "File không tồn tại. Vui lòng upload file."
+                    Message = "File does not exist. Please upload file."
                 });
             }
 
@@ -121,7 +121,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 return BadRequest(new ApiResponse<object>()
                 {
                     Data = null,
-                    Message = "File không tồn tại. Vui lòng upload file."
+                    Message = "File does not exist. Please upload file."
                 });
             }
 
@@ -131,7 +131,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 return BadRequest(new ApiResponse<object>()
                 {
                     Data = null,
-                    Message = "Vui lòng hoàn tất quá trình gán nhãn và xuất file excel."
+                    Message = "Please complete the labeling process and export the excel file."
                 });
             }
 
@@ -153,7 +153,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 return BadRequest(new ApiResponse<List<VideoInfo>>()
                 {
                     Data = listNewVideo.ToList(),
-                    Message = "Hết dữ liệu. Sang sheet tiếp theo. Vui lòng bấm Init lần nữa."
+                    Message = "Out of data. Go to next sheet. Please click Init again."
                 });
             }
 
@@ -184,7 +184,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                     SheetName = sheet.Name,
                     StartRowInSheet = ConfigService.Config.RowIndex,
                 },
-                Message = "Init hoàn tất."
+                Message = "Init Successfully."
             });
         }
    
@@ -222,7 +222,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                         {
                             Total = total,
                         },
-                        Message = "Tất cả video đã được tải."
+                        Message = "All videos downloaded."
                     });
                 }
                 
@@ -315,7 +315,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
 
                 return Ok(new ApiResponse<object>
                 {
-                    Message = "Đang tải video."
+                    Message = "Downloading."
                 });
             }
             catch (Exception ex)
@@ -333,7 +333,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             {
                 return BadRequest(new ApiResponse<object>
                 {
-                    Message = "Không có tiến trình tải nào đang diễn ra."
+                    Message = "No download is in progress."
                 });
             }
 
@@ -341,7 +341,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
 
             return Ok(new ApiResponse<object>
             {
-                Message = "Dừng tải video."
+                Message = "Stop downloading."
             });
         }
 
@@ -390,7 +390,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             {
                 return BadRequest(new ApiResponse<object>()
                 {
-                    Message = "Không tìm thấy video."
+                    Message = "Video not found."
                 });
             }
             video.Label =  model.Label;
@@ -398,7 +398,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             
             return Ok(new ApiResponse<object>()
             {
-                Message = "Cập nhật thành công."
+                Message = "Update Successfully."
             });
         }
 

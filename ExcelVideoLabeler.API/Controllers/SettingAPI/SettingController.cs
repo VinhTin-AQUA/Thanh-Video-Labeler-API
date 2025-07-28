@@ -39,7 +39,7 @@ namespace ExcelVideoLabeler.API.Controllers.SettingAPI
             {
                 return BadRequest(new ApiResponse<object>()
                 {
-                    Message = "Có lỗi khi lấy Setting Info"
+                    Message = "Error when get Setting Info"
                 });
             }
 
@@ -69,8 +69,8 @@ namespace ExcelVideoLabeler.API.Controllers.SettingAPI
             {
                 Data = new
                 {
-                    FileName = "Chưa có.",
-                    SheetName = "Chưa có."
+                    FileName = "Nothing.",
+                    SheetName = "Nothing."
                 },
                 Message = ""
             });
@@ -114,12 +114,12 @@ namespace ExcelVideoLabeler.API.Controllers.SettingAPI
                 return Ok(
                     new ApiResponse<object>()
                     {
-                        Message = "Xóa dữ liệu thành công."
+                        Message = "Delete Successfully."
                     });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi khi xóa file: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
     }
