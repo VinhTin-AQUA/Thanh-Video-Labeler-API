@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelVideoLabeler.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250726164821_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250730065830_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,26 +26,42 @@ namespace ExcelVideoLabeler.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ExceFileName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RowIndex")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("SheetCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("SheetIndex")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TotalDownloaded")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TotalSheet")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TotalToDownload")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("SheetName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.ToTable("Config");
+                });
+
+            modelBuilder.Entity("ExcelVideoLabeler.Domain.Entities.Sheet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SheetCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SheetName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SheetStatus")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sheet");
                 });
 
             modelBuilder.Entity("ExcelVideoLabeler.Domain.Entities.VideoInfo", b =>

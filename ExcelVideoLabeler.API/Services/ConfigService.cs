@@ -20,11 +20,8 @@ namespace ExcelVideoLabeler.API.Services
                 {
                     Id = 1,
                     ExceFileName = "",
-                    TotalDownloaded = 0,
-                    TotalToDownload = 0,
-                    SheetIndex = 0,
-                    TotalSheet = 0,
-                    RowIndex = 1,
+                    SheetName = "",
+                    SheetCode = "",
                 };
 
                 await configCommandRepository.AddAsync(defaultSetting);
@@ -36,37 +33,22 @@ namespace ExcelVideoLabeler.API.Services
             }
         }
 
-        public void Update(Config updatedSetting)
-        {
-            if (!string.IsNullOrEmpty(updatedSetting.ExceFileName))
-            {
-                Config.ExceFileName = updatedSetting.ExceFileName;
-            }
+        //public void Update(Config updatedSetting)
+        //{
+        //    if (!string.IsNullOrEmpty(updatedSetting.ExceFileName))
+        //    {
+        //        Config.ExceFileName = updatedSetting.ExceFileName;
+        //    }
 
-            if (updatedSetting.TotalDownloaded != -1)
-            {
-                Config.TotalDownloaded = updatedSetting.TotalDownloaded;
-            }
-        
-            if (updatedSetting.TotalToDownload != -1)
-            {
-                Config.TotalToDownload = updatedSetting.TotalToDownload;
-            }
-        
-            if (updatedSetting.SheetIndex != -1)
-            {
-                Config.SheetIndex = updatedSetting.SheetIndex;
-            }
-            
-            if (updatedSetting.TotalSheet != -1)
-            {
-                Config.TotalSheet = updatedSetting.TotalSheet;
-            }
-            
-            if (updatedSetting.RowIndex != -1)
-            {
-                Config.RowIndex = updatedSetting.RowIndex;
-            }
-        }
+        //    if (!string.IsNullOrEmpty(updatedSetting.SheetName))
+        //    {
+        //        Config.SheetName = updatedSetting.SheetName;
+        //    }
+
+        //    if (!string.IsNullOrEmpty(updatedSetting.SheetCode))
+        //    {
+        //        Config.SheetCode = updatedSetting.SheetCode;
+        //    }
+        //}
     }
 }

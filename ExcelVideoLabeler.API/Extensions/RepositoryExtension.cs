@@ -1,4 +1,5 @@
 using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
+using ExcelVideoLabeler.Infrastructure.Repositories.SheetRepository;
 using ExcelVideoLabeler.Infrastructure.Repositories.VideoInfoRepository;
 
 namespace ExcelVideoLabeler.API.Extensions
@@ -12,6 +13,10 @@ namespace ExcelVideoLabeler.API.Extensions
 
             services.AddScoped<IConfigCommandRepository, ConfigCommandRepository>();
             services.AddScoped<IConfigQueryRepository, ConfigQueryRepository>();
+
+
+            services.AddScoped<ISheetCommandRepository, SheetCommandRepository>();
+            services.AddScoped<ISheetQueryRepository, SheetQueryRepository>();
         }
     }
 }

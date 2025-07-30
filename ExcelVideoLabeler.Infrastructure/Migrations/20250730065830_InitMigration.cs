@@ -5,7 +5,7 @@
 namespace ExcelVideoLabeler.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,16 +16,28 @@ namespace ExcelVideoLabeler.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    TotalDownloaded = table.Column<int>(type: "INTEGER", nullable: false),
-                    ExceFileName = table.Column<string>(type: "TEXT", nullable: true),
-                    TotalToDownload = table.Column<int>(type: "INTEGER", nullable: false),
-                    SheetIndex = table.Column<int>(type: "INTEGER", nullable: false),
-                    TotalSheet = table.Column<int>(type: "INTEGER", nullable: false),
-                    RowIndex = table.Column<int>(type: "INTEGER", nullable: false)
+                    ExceFileName = table.Column<string>(type: "TEXT", nullable: false),
+                    SheetName = table.Column<string>(type: "TEXT", nullable: false),
+                    SheetCode = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Config", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sheet",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SheetName = table.Column<string>(type: "TEXT", nullable: false),
+                    SheetCode = table.Column<string>(type: "TEXT", nullable: false),
+                    SheetStatus = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sheet", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -83,6 +95,9 @@ namespace ExcelVideoLabeler.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Config");
+
+            migrationBuilder.DropTable(
+                name: "Sheet");
 
             migrationBuilder.DropTable(
                 name: "VideoInfo");

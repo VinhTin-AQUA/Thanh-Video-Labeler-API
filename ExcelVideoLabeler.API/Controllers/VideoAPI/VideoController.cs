@@ -9,6 +9,7 @@ using ExcelVideoLabeler.Domain.Entities;
 using ExcelVideoLabeler.Domain.Enums;
 using ExcelVideoLabeler.Infrastructure.Repositories.ConfigRepository;
 using ExcelVideoLabeler.Infrastructure.Repositories.Models;
+using ExcelVideoLabeler.Infrastructure.Repositories.SheetRepository;
 using ExcelVideoLabeler.Infrastructure.Repositories.VideoInfoRepository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +24,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
         private readonly IVideoInfoQueryRepository videoInfoQueryRepository;
         private readonly IVideoInfoCommandRepository videoInfoCommandRepository;
         private readonly IConfigCommandRepository configCommandRepository;
+        private readonly ISheetQueryRepository sheetQueryRepository;
         private readonly IServiceScopeFactory scopeFactory;
         private readonly IWebHostEnvironment env;
 
@@ -35,8 +37,9 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             ConfigService configService,
             VideoExcelService videoExcelService,
             IVideoInfoQueryRepository videoInfoQueryRepository,
-            IVideoInfoCommandRepository  videoInfoCommandRepository,
+            IVideoInfoCommandRepository videoInfoCommandRepository,
             IConfigCommandRepository configCommandRepository,
+            ISheetQueryRepository sheetQueryRepository,
             IServiceScopeFactory scopeFactory,
             IWebHostEnvironment env)
         {
@@ -45,6 +48,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
             this.videoInfoQueryRepository = videoInfoQueryRepository;
             this.videoInfoCommandRepository = videoInfoCommandRepository;
             this.configCommandRepository = configCommandRepository;
+            this.sheetQueryRepository = sheetQueryRepository;
             this.scopeFactory = scopeFactory;
             this.env = env;
         }
@@ -52,57 +56,37 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
         [HttpGet]
         public async Task<IActionResult> GetRemainingVideos()
         {
-            if (string.IsNullOrEmpty(ConfigService.Config.ExceFileName))
-            {
-                return Ok(new ApiResponse<object>()
-                {
-                    Data = new
-                    {
-                        Total = 0,
-                        SheetName = "",
-                        StartRowInSheet = -1,
-                    },
-                    Message = "File is not exists. Config filename is empty."
-                });
-            }
-            
-            string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder,
-                ConfigService.Config.ExceFileName);
-            if (!System.IO.File.Exists(filePath))
-            {
-                return Ok(new ApiResponse<object>()
-                {
-                    Data = new
-                    {
-                        Total = 0,
-                        SheetName = "",
-                        StartRowInSheet = -1,
-                    },
-                    Message = "File is not exists. File path is not exists."
-                });
-            }
-            
-            using Workbook workbook = new Workbook(filePath);
-            using Worksheet sheet = workbook.Worksheets[ConfigService.Config.SheetIndex];
-            QueryOptionsBuilder<VideoInfo> queryOptionsBuilder = new();
-            queryOptionsBuilder.Where(x => x.VideoStatus == VideoStatus.Pending);
-            var r = await videoInfoQueryRepository.FilterAsync(queryOptionsBuilder.Build());
-            
+            QueryOptionsBuilder<VideoInfo> pendingVideoQueryBuilder = new();
+            pendingVideoQueryBuilder.Where(x => x.VideoStatus == VideoStatus.Pending);
+            var pendingVideos = await videoInfoQueryRepository.FilterAsync(pendingVideoQueryBuilder.Build());
+
+            QueryOptionsBuilder<VideoInfo> downloadedVideoQueryBuilder = new();
+            downloadedVideoQueryBuilder.Where(x => x.VideoStatus == VideoStatus.Downloaded);
+            var downloadedVideos = await videoInfoQueryRepository.FilterAsync(downloadedVideoQueryBuilder.Build());
+
+            QueryOptionsBuilder<VideoInfo> errorLinkVideoQueryBuilder = new();
+            errorLinkVideoQueryBuilder.Where(x => x.VideoStatus == VideoStatus.ErrorLink);
+            var errorLinkVideos = await videoInfoQueryRepository.FilterAsync(errorLinkVideoQueryBuilder.Build());
+
+            var sheets = await sheetQueryRepository.GetAllAsync();
+
             return Ok(new ApiResponse<object>()
             {
                 Data = new
                 {
-                    ListVideo = r.Take(5).ToList(),
-                    Total = r.Count,
-                    SheetName = sheet.Name,
-                    StartRowInSheet = ConfigService.Config.RowIndex,
+                    SampleVideos = pendingVideos.Take(5).ToList(),
+                    PendingTotalVideos = pendingVideos.Count,
+                    DownloadedTotalVideos = downloadedVideos.Count,
+                    ErrorLinkTotalVideos = errorLinkVideos.Count,
+                    SelectedSheet = new { ConfigService.Config.SheetName, ConfigService.Config.SheetCode },
+                    Sheets = sheets.ToList()
                 },
                 Message = ""
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> InitDownloadVideo()
+        public async Task<IActionResult> InitDownloadVideo(InitDownloadRequest downloadRequest)
         {
             if (string.IsNullOrEmpty(ConfigService.Config.ExceFileName))
             {
@@ -131,74 +115,60 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 return BadRequest(new ApiResponse<object>()
                 {
                     Data = null,
-                    Message = "Please complete the labeling process and export the excel file."
+                    Message = "Please complete the labeling process and export the excel file with removing data option."
                 });
             }
 
             using Workbook workbook = new Workbook(filePath);
-
-            // Lấy sheet đầu tiên
-            using Worksheet sheet = workbook.Worksheets[ConfigService.Config.SheetIndex];
-            var listVideo = videoExcelService.ReadDataFromSheet(sheet);
-            var listNewVideo = await videoInfoCommandRepository.AddRangeAsync(listVideo);
-
-            if (listVideo.Count == 0)
+            using Worksheet? sheet = workbook.Worksheets.Where(x => x.CodeName == downloadRequest.SheetCode).FirstOrDefault();
+            if (sheet == null)
             {
-                var newConfig = new Config()
+                return BadRequest(new ApiResponse<object>()
                 {
-                    SheetIndex = ConfigService.Config.SheetIndex + 1,
-                };
-                
-                await UpdateConfig(newConfig);
-                return BadRequest(new ApiResponse<List<VideoInfo>>()
-                {
-                    Data = listNewVideo.ToList(),
-                    Message = "Out of data. Go to next sheet. Please click Init again."
+                    Data = null,
+                    Message = "Sheet not found."
                 });
             }
 
-            if (listNewVideo.Count < VideoConstants.TotalVideoToDownload)
-            {
-                var newConfig = new Config()
-                {
-                    SheetIndex = ConfigService.Config.SheetIndex + 1,
-                    RowIndex = 1
-                };
-                await UpdateConfig(newConfig);
-            }
-            else
-            {
-                var newConfig = new Config()
-                {
-                    RowIndex = ConfigService.Config.RowIndex + listNewVideo.Count
-                };
-                await UpdateConfig(newConfig);
-            }
+            // update config
+            ConfigService.Config.SheetCode = downloadRequest.SheetCode;
+            ConfigService.Config.SheetName = sheet.Name;
+            await configCommandRepository.UpdateAsync(ConfigService.Config);
 
+            // thêm video mới
+            var listVideo = videoExcelService.ReadDataFromSheet(sheet);
+            if (listVideo.Count == 0)
+            {
+                return BadRequest(new ApiResponse<List<VideoInfo>>()
+                {
+                    Data = listVideo.ToList(),
+                    Message = "Out of data. Please select other sheet and init again."
+                });
+            }
+            var listNewVideo = await videoInfoCommandRepository.AddRangeAsync(listVideo);
             return Ok(new ApiResponse<object>()
             {
                 Data = new
                 {
-                    ListNewVideo = listNewVideo.Take(5).ToList(),
-                    Total = listNewVideo.Count,
-                    SheetName = sheet.Name,
-                    StartRowInSheet = ConfigService.Config.RowIndex,
+                    SampleVideos = listNewVideo.Take(5).ToList(),
+                    PendingTotalVideos = listNewVideo.Count,
+                    SelectedSheet = new { ConfigService.Config.SheetName, ConfigService.Config.SheetCode },
                 },
                 Message = "Init Successfully."
             });
         }
-   
+
         [HttpPost]
-        public async Task<IActionResult> StartDownload()
+        public async Task<IActionResult> StartDownload(DownloadVideoRequest downloadVideoRequest)
         {
             if (_isDownloading)
             {
-                return Ok (new ApiResponse<object>
+                return Ok(new ApiResponse<object>
                 {
                     Message = "Quá trình tải video đang thực hiện."
                 });
             }
-            
+
             cts = new CancellationTokenSource();
             await _semaphore.WaitAsync();
             _isDownloading = true;
@@ -225,16 +195,16 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                         Message = "All videos downloaded."
                     });
                 }
-                
-                int maxConcurrentDownloads = 3; // Số video tải đồng thời
-                
+
+                int maxConcurrentDownloads = 2; // Số video tải đồng thời
+
                 _ = Task.Run(async () =>
                 {
                     using var scope = scopeFactory.CreateScope();
                     var _VideoService = scope.ServiceProvider.GetRequiredService<VideoService>();
                     var _videoInfoCommandRepository = scope.ServiceProvider.GetRequiredService<IVideoInfoCommandRepository>();
                     var _videoDownloadHubService = scope.ServiceProvider.GetRequiredService<VideoDownloadHubService>();
-                    
+
                     var semaphoreSlim = new SemaphoreSlim(maxConcurrentDownloads);
                     var downloadTasks = new List<Task>();
                     int totalSuccess = 0;
@@ -284,8 +254,12 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                                         });
                                         await _VideoService.SaveFileVideoInfo(video);
                                     }
-                                    
+
                                     await _videoInfoCommandRepository.UpdateAsync(video);
+                                    if (totalSuccess + totalFailed >= downloadVideoRequest.TotalToDownload)
+                                    {
+                                        cts.Cancel();
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
@@ -325,7 +299,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                 return StatusCode(500, new ApiResponse<object> { Message = $"Lỗi: {ex.Message}" });
             }
         }
-        
+
         [HttpPost]
         public IActionResult StopDownload()
         {
@@ -365,7 +339,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                     queryOptionBuilder.Where(x => string.IsNullOrEmpty(x.Label) == false);
                 }
             }
-            
+
             if (noLabel != null)
             {
                 if (noLabel.Value)
@@ -393,9 +367,9 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
                     Message = "Video not found."
                 });
             }
-            video.Label =  model.Label;
+            video.Label = model.Label;
             await videoInfoCommandRepository.UpdateAsync(video);
-            
+
             return Ok(new ApiResponse<object>()
             {
                 Message = "Update Successfully."
@@ -410,22 +384,22 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAPI
 
             if (exportExcel.ClearAllData)
             {
-                 await videoInfoCommandRepository.DeleteRangeAsync(data.ToList());
+                /* xóa file video trong folder */
+                string folderPath = Path.Combine(env.WebRootPath, FolderConstants.VideoFolder);
+                if (Directory.Exists(folderPath))
+                {
+                    string[] files = Directory.GetFiles(folderPath);
+
+                    foreach (var file in files)
+                    {
+                        System.IO.File.Delete(file);
+                    }
+                }
+                await videoInfoCommandRepository.DeleteRangeAsync(data.ToList());
             }
-            return File(byteData, 
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+            return File(byteData,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "Export.xlsx");
         }
-        
-        #region private methods
-
-        private async Task UpdateConfig(Config newConfig)
-        {
-            configService.Update(newConfig);
-            await configCommandRepository.UpdateAsync(ConfigService.Config);
-        }
-        
-        #endregion
-
     }
 }

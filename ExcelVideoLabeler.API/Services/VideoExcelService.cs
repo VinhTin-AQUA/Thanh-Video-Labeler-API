@@ -68,10 +68,9 @@ namespace ExcelVideoLabeler.API.Services
                     excelHeaderMap[header] = col;
             }
 
-            int remaining = VideoConstants.TotalVideoToDownload;
 
             var result = new List<Dictionary<string, string>>();
-            for (int row = ConfigService.Config.RowIndex; row <= rowCount && remaining > 0; row++)
+            for (int row = 0; row <= rowCount; row++)
             {
                 var rowData = new Dictionary<string, string>();
                 foreach (var header in VideoConstants.ExpectedHeaders)
@@ -87,7 +86,6 @@ namespace ExcelVideoLabeler.API.Services
                         rowData[header] = "";
                     }
                 }
-                remaining--;
                 result.Add(rowData);
             }
 

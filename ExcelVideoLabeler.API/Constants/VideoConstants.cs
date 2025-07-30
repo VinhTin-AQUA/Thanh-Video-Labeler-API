@@ -2,8 +2,6 @@ namespace ExcelVideoLabeler.API.Constants
 {
     public class VideoConstants
     {
-        public const int TotalVideoToDownload = 500;
-        
         public static readonly string[] ExpectedHeaders =
         [
             "TransID", "TransNB", "Total_amount", "DVRStart",

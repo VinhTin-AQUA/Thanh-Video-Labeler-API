@@ -13,6 +13,7 @@ namespace ExcelVideoLabeler.Infrastructure.DataContext
 
         public DbSet<VideoInfo> VideoInfo { get; set; }
         public DbSet<Config>  Config { get; set; }
+        public DbSet<Sheet>  Sheet { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

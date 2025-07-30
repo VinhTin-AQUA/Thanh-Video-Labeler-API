@@ -12,19 +12,16 @@ namespace ExcelVideoLabeler.API.Controllers.SettingAPI
     [Route("api/[controller]/[action]")]
     public class SettingController : ControllerBase
     {
-        private readonly IConfigQueryRepository configQueryRepository;
         private readonly IConfigCommandRepository configCommandRepository;
         private readonly IVideoInfoCommandRepository videoInfoCommandRepository;
         private readonly IVideoInfoQueryRepository videoInfoQueryRepository;
         private readonly IWebHostEnvironment env;
 
-        public SettingController(IConfigQueryRepository configQueryRepository,
-            IConfigCommandRepository configCommandRepository,
+        public SettingController(IConfigCommandRepository configCommandRepository,
             IVideoInfoCommandRepository videoInfoCommandRepository,
             IVideoInfoQueryRepository videoInfoQueryRepository,
             IWebHostEnvironment env)
         {
-            this.configQueryRepository = configQueryRepository;
             this.configCommandRepository = configCommandRepository;
             this.videoInfoCommandRepository = videoInfoCommandRepository;
             this.videoInfoQueryRepository = videoInfoQueryRepository;
@@ -32,47 +29,16 @@ namespace ExcelVideoLabeler.API.Controllers.SettingAPI
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSettingInfo()
+        public IActionResult GetSettingInfo()
         {
-            var config = await configQueryRepository.GetByIdAsync(1);
-            if (config == null)
-            {
-                return BadRequest(new ApiResponse<object>()
-                {
-                    Message = "Error when get Setting Info"
-                });
-            }
-
-            if (!string.IsNullOrEmpty(ConfigService.Config.ExceFileName))
-            {
-                string filePath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder,ConfigService.Config.ExceFileName);
-               
-                string sheetName = "";
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (var workbook = new Workbook(stream))
-                {
-                    sheetName = workbook.Worksheets[ConfigService.Config.SheetIndex].Name;
-                }
-                
-                return Ok(new ApiResponse<object>()
-                {
-                    Data = new
-                    {
-                        FileName = config.ExceFileName,
-                        SheetName = sheetName
-                    },
-                    Message = ""
-                });
-            }
-            
             return Ok(new ApiResponse<object>()
             {
                 Data = new
                 {
-                    FileName = "Nothing.",
-                    SheetName = "Nothing."
+                    FileName = string.IsNullOrEmpty(ConfigService.Config.ExceFileName) ? "Empty" : ConfigService.Config.ExceFileName,
+                    SheetName = string.IsNullOrEmpty(ConfigService.Config.SheetName) ? "Empty" : ConfigService.Config.SheetName,
                 },
-                Message = ""
+                Message = "" 
             });
         }
 
@@ -90,12 +56,8 @@ namespace ExcelVideoLabeler.API.Controllers.SettingAPI
                 }
                 
                 ConfigService.Config.ExceFileName = "";
-                ConfigService.Config.ExceFileName = "";
-                ConfigService.Config.TotalDownloaded = 0;
-                ConfigService.Config.TotalToDownload = 0;
-                ConfigService.Config.SheetIndex = 0;
-                ConfigService.Config.TotalSheet = 0;
-                ConfigService.Config.RowIndex = 1;
+                ConfigService.Config.SheetName = "";
+                ConfigService.Config.SheetCode = "";
                 await configCommandRepository.UpdateAsync(ConfigService.Config);
             
                 string folderPath = Path.Combine(env.WebRootPath, FolderConstants.VideoFolder);
