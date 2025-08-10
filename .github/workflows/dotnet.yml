@@ -44,7 +44,7 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             name: published-app # Tên artifact cần tải xuống
-            path: ./publish # Đường dẫn lưu trữ artifact sau khi tải xuống
+            path: ./publish # Đường dẫn lưu trữ artifact sau khi tải xuống, nội dung của published-app sẽ được giải nén vào bên trong publish nếu published-app là thư mục
   
         # Cài đặt Inno Setup Compiler
         - name: Install Inno Setup
@@ -74,7 +74,8 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   name: ExcelLabeler.exe # tên của file hoặc thư mục tải lên artifact
-                  path: . # đường dẫn của file hoặc thư mục tải lên artifact
+                  path: . # đường dẫn lưu ExcelLabeler.exe
+
 
             # tao github release
             - name: Create GitHub Release
