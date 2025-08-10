@@ -34,19 +34,19 @@ SolidCompression=yes
 
 ; Danh sách file sẽ được đóng gói
 [Files]
-Source: "./publish/*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+Source: "../publish/*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Tạo shortcut
 [Icons]
 ; Name: "{group}\ExcelLabeler"; \                    ; ⑮ Shortcut trong Start Menu
 ; Filename: "{app}\ExcelLabeler.exe"                 ; ⑯ Trỏ tới file .exe chính
-Name: "{group}/ExcelLabeler"; IconFilename: "{app}/icon.ico"; Filename: "{app}/ExcelVideoLabeler.API.exe";
+Name: "{group}\ExcelLabeler"; IconFilename: "{app}/icon.ico"; Filename: "{app}/ExcelVideoLabeler.API.exe";
 
 ; Name: "{commondesktop}\MyApp"; \            ; ⑰ Shortcut ngoài desktop
 ; Filename: "{app}\MyApp.exe"; \
 ; Tasks: desktopicon                          ; ⑱ Liên kết với task trong phần [Tasks]
-Name: "{commondesktop}/ExcelLabeler"; IconFilename: "{app}/icon.ico"; Filename: "{app}/ExcelVideoLabeler.API.exe"; Tasks: desktopicon;
+Name: "{commondesktop}\ExcelLabeler"; IconFilename: "{app}/icon.ico"; Filename: "{app}/ExcelVideoLabeler.API.exe"; Tasks: desktopicon;
 
 ; Mục lựa chọn thêm trong installer (checkbox)
 [Tasks]                                   
