@@ -1,4 +1,6 @@
 using ExcelVideoLabeler.API.Hubs;
+using ExcelVideoLabeler.API.Hubs.VideoAws;
+using ExcelVideoLabeler.API.Models;
 using ExcelVideoLabeler.API.Services;
 
 namespace ExcelVideoLabeler.API.Extensions
@@ -11,8 +13,12 @@ namespace ExcelVideoLabeler.API.Extensions
             services.AddSingleton<VideoService>();
             services.AddSingleton<FileService>();
             services.AddSingleton<VideoExcelService>();
+            services.AddSingleton<VideoAwsService>();
             
-           services.AddSingleton<VideoDownloadHubService>();
+            services.AddSingleton<VideoDownloadHubService>();
+            services.AddSingleton<VideoAwsHubService>();
+
+            services.AddSingleton<AwsConfig>(configuration.GetSection("AwsConfig").Get<AwsConfig>()!);
         }
     }
 }

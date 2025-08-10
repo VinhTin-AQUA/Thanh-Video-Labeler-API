@@ -1,4 +1,5 @@
 using ExcelVideoLabeler.Domain.Entities;
+using ExcelVideoLabeler.Domain.Entities.VideoAws;
 using ExcelVideoLabeler.Infrastructure.Configuartions;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,10 @@ namespace ExcelVideoLabeler.Infrastructure.DataContext
         public DbSet<VideoInfo> VideoInfo { get; set; }
         public DbSet<Config>  Config { get; set; }
         public DbSet<Sheet>  Sheet { get; set; }
+        
+        // AWS
+        public DbSet<VideoAwsInfo>  VideoAwsInfo { get; set; }
+        public DbSet<VideoAwsConfig>  VideoAwsConfig { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

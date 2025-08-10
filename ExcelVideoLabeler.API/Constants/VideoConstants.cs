@@ -16,5 +16,25 @@ namespace ExcelVideoLabeler.API.Constants
             "has_redeem_later", "y_pred_proba",
             "bucket", "bucket_small", "TransDate_weekday_mask", "TransDate_formatted",
         ];
+        
+        public static readonly string[] ExpectedExcelAwsHeaders =
+        [
+            "Case",
+            "Store Location",
+            "ServerID",
+            "Requested By",
+            "Requested Date",
+            "Date Of Incident",
+            "Session Name",
+            "Channel Name",
+            "Backup Time",
+            "Size",
+            "Status",
+            "Email ( Contact info +  Receiver info)",
+            "Tester (manual input from tool)",
+            "Note",
+            "AWS link",
+            "Date download file",
+        ];
     }
 }

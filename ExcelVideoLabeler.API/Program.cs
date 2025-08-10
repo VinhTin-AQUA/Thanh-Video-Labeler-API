@@ -1,5 +1,6 @@
 using ExcelVideoLabeler.API.Extensions;
 using ExcelVideoLabeler.API.Hubs;
+using ExcelVideoLabeler.API.Hubs.VideoAws;
 using ExcelVideoLabeler.API.Middlewares;
 using ExcelVideoLabeler.API.Services;
 
@@ -25,7 +26,6 @@ builder.Services.AddCors(c =>
         .AllowCredentials());
 });
 
-
 var app = builder.Build();
 
 app.StartMigrationPending();
@@ -36,7 +36,13 @@ using (var scope = app.Services.CreateScope())
     if (configService != null)
     {
         await configService.Init(scope.ServiceProvider);
-    } 
+    }
+    
+    var videoAwsService = scope.ServiceProvider.GetService<VideoAwsService>();
+    if (videoAwsService != null)
+    {
+        await videoAwsService.Init(scope.ServiceProvider);
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -57,6 +63,8 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapHub<VideoDowloadHub>("/VideoDowloadHub");
+app.MapHub<VideoAwsHub>("/AwsVideoDowloadHub");
+
 app.MapControllers();
 
 app.Run();

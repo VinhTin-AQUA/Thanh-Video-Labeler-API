@@ -54,6 +54,7 @@ namespace ExcelVideoLabeler.API.Controllers.UploadAPI
                     Message = "File is invalid."
                 });
             }
+            
             string folderpath = Path.Combine(env.WebRootPath, FolderConstants.ExcelFolder);
             if (!uploadFile.IsAccepted && System.IO.File.Exists(Path.Combine(folderpath, uploadFile.File.FileName)))
             {

@@ -5,7 +5,7 @@
 namespace ExcelVideoLabeler.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMigration : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,6 +38,50 @@ namespace ExcelVideoLabeler.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Sheet", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VideoAwsConfig",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FileName = table.Column<string>(type: "TEXT", nullable: false),
+                    TotalVideoAws = table.Column<int>(type: "INTEGER", nullable: false),
+                    TotalVideoAwsDownloaded = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VideoAwsConfig", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VideoAwsInfo",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Case = table.Column<string>(type: "TEXT", nullable: false),
+                    StoreLocation = table.Column<string>(type: "TEXT", nullable: false),
+                    ServerID = table.Column<string>(type: "TEXT", nullable: false),
+                    RequestedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    RequestedDate = table.Column<string>(type: "TEXT", nullable: false),
+                    DateOfIncident = table.Column<string>(type: "TEXT", nullable: false),
+                    SessionName = table.Column<string>(type: "TEXT", nullable: false),
+                    ChannelName = table.Column<string>(type: "TEXT", nullable: false),
+                    BackupTime = table.Column<string>(type: "TEXT", nullable: false),
+                    Size = table.Column<string>(type: "TEXT", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    Tester = table.Column<string>(type: "TEXT", nullable: false),
+                    Note = table.Column<string>(type: "TEXT", nullable: false),
+                    DateDownloadFile = table.Column<string>(type: "TEXT", nullable: false),
+                    AWSlink = table.Column<string>(type: "TEXT", nullable: false),
+                    VideoStatus = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VideoAwsInfo", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +142,12 @@ namespace ExcelVideoLabeler.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Sheet");
+
+            migrationBuilder.DropTable(
+                name: "VideoAwsConfig");
+
+            migrationBuilder.DropTable(
+                name: "VideoAwsInfo");
 
             migrationBuilder.DropTable(
                 name: "VideoInfo");
