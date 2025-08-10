@@ -61,7 +61,7 @@ jobs:
           with:
             name: installer-exe
             path: ./setup/ExcelLabeler.exe
-
+# 
     release:
         runs-on: ubuntu-latest
         permissions:
