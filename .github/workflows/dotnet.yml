@@ -34,6 +34,7 @@ jobs:
                   name: published-app
                   path: ./publish
                   retention-days: 1 # Hoặc 1-90 ngày tùy ý
+
     package:
       runs-on: windows-latest
       needs: build
@@ -64,7 +65,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
-        needs: build
+        needs: package
 
         steps:
             #  tải artifact xuống và đưa vào release

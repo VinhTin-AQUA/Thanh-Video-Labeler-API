@@ -34,7 +34,7 @@ SolidCompression=yes
 
 ; Danh sách file sẽ được đóng gói
 [Files]
-Source: "./publish*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+Source: "./publish/*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Tạo shortcut
