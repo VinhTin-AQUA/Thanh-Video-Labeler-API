@@ -31,7 +31,7 @@ jobs:
             - name: Upload published app
               uses: actions/upload-artifact@v4
               with:
-                  name: published-app
+                  name: published-app # tên của file hoặc thư mục tải lên artifact
                   path: ./publish
                   retention-days: 1 # Hoặc 1-90 ngày tùy ý
 
@@ -43,7 +43,7 @@ jobs:
         - name: Download published app
           uses: actions/download-artifact@v4
           with:
-            name: published-app
+            name: published-app # tên của file hoặc thư mục tải lên artifact
             path: ./publish
   
         # Cài đặt Inno Setup Compiler
@@ -59,7 +59,7 @@ jobs:
         - name: Upload EXE artifact
           uses: actions/upload-artifact@v4
           with:
-            name: installer-exe
+            name: ExcelLabeler.exe # tên của file hoặc thư mục tải lên artifact
             path: ./setup/ExcelLabeler.exe
 # 
     release:
