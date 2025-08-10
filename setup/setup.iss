@@ -34,10 +34,7 @@ SolidCompression=yes
 
 ; Danh sách file sẽ được đóng gói
 [Files]
-; Source: "bin\Release\net8.0\publish\*"; \   ; ⑪ Chỉ định thư mục chứa app sau khi publish
-; DestDir: "{app}"; \                         ; ⑫ Nơi sẽ cài file (biến {app} là đường dẫn người dùng chọn)
-; Flags: recursesubdirs createallsubdirs      ; ⑬ Bao gồm tất cả file + thư mục con, giữ nguyên cấu trúc
-Source: "..ExcelVideoLabeler.API/bin/Release/net8.0/win-x64/*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+Source: "./publish*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Tạo shortcut
