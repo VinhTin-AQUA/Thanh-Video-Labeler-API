@@ -55,7 +55,7 @@ jobs:
           run: |
             iscc ./setup/setup.iss
   
-        # Giả sử file output .exe nằm ở ./ProductInstaller.exe
+        # file output .exe nằm ở /setup/ExcelLabeler.exe
         - name: Upload EXE artifact
           uses: actions/upload-artifact@v4
           with:
@@ -70,11 +70,11 @@ jobs:
 
         steps:
             #  tải artifact xuống và đưa vào release
-            - name: Download published app
+            - name: Download exe file
               uses: actions/download-artifact@v4
               with:
-                  name: ExcelLabeler.exe
-                  path: ./ExcelLabeler.exe
+                  name: ExcelLabeler.exe # tên của file hoặc thư mục tải lên artifact
+                  path: . # đường dẫn của file hoặc thư mục tải lên artifact
 
             # tao github release
             - name: Create GitHub Release
