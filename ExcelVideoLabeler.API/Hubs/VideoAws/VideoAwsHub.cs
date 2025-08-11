@@ -7,6 +7,7 @@ namespace ExcelVideoLabeler.API.Hubs.VideoAws
         Task RecieveProgress(string progress);
         Task RecieveDowloadingInfoVideo(string videoName);
         Task RecieveErrorVideo(string _case, string serverId, string link);
+        Task RecieveIncreaseSucess(int totalSuccess);
     }
     
     public class VideoAwsHub : Hub<IVideoAwsHub>

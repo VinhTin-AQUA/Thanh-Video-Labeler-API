@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -213,10 +214,6 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                 int maxConcurrentDownloads = 1; // Số video tải đồng thời
                 _ = Task.Run(async () =>
                 {
-                    using var scope = scopeFactory.CreateScope();
-                    var _videoInfoCommandRepository = scope.ServiceProvider.GetRequiredService<IVideoAwsInfoCommandRepository>();
-                    var _videoDownloadHubService = scope.ServiceProvider.GetRequiredService<VideoAwsHubService>();
-
                     var semaphoreSlim = new SemaphoreSlim(maxConcurrentDownloads);
                     var downloadTasks = new List<Task>();
                     int totalSuccess = 0;
@@ -233,12 +230,21 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                             int index = i; // Local copy for closure
                             var task = Task.Run(async () =>
                             {
+                                using var scope = scopeFactory.CreateScope();
+                                var _videoInfoCommandRepository = scope.ServiceProvider.GetRequiredService<IVideoAwsInfoCommandRepository>();
+                                var _videoDownloadHubService = scope.ServiceProvider.GetRequiredService<VideoAwsHubService>();
+                                var video = listVideoAws[index];
+                                
                                 try
                                 {
-                                    var video = listVideoAws[index];
                                     await _videoDownloadHubService.RecieveDowloadingInfoVideo(video.AWSlink);
                                     bool check = await DownloadVideo(video.AWSlink, _videoDownloadHubService);
                 
+                                    if (token.IsCancellationRequested)
+                                    {
+                                        return;
+                                    }
+                                    
                                     if (!check)
                                     {
                                         await _videoDownloadHubService.RecieveErrorVideo(video.Case, video.ServerID, video.AWSlink);
@@ -247,14 +253,15 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                                     }
                                     else
                                     {
+                                        await _videoDownloadHubService.RecieveIncreaseSucess(1);
                                         video.VideoStatus = VideoStatus.Downloaded;
                                         Interlocked.Increment(ref totalSuccess);
                                     }
-
                                     await _videoInfoCommandRepository.UpdateAsync(video);
                                 }
                                 catch (Exception ex)
                                 {
+                                    await _videoDownloadHubService.RecieveErrorVideo(video.Case, video.ServerID, video.AWSlink);
                                     Console.WriteLine($"Lỗi khi tải video: {ex.Message}");
                                 }
                                 finally
@@ -354,22 +361,25 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                     Key = keyName
                 };
 
+                string filePath = Path.Combine(downloadFolder, fileName);
+                
                 using (GetObjectResponse response = await s3Client.GetObjectAsync(request))
                 {
                     byte[] buffer = new byte[10 * 1024 * 1024]; // 4MB buffer
                     long totalRead = 0;
                     int read;
-                    string filePath = Path.Combine(downloadFolder, fileName);
+                   
                     double totalMB = response.ContentLength / (1024.0 * 1024.0);
                     
                     using Stream responseStream = response.ResponseStream;
                     using FileStream fileStream = System.IO.File.Create(filePath);
+                    
                     while ((read = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
                         if (_cancelRequested || _isDownloading == false)
                         {
                             System.IO.File.Delete(filePath);
-                            break;
+                            return false;
                         }
                         await fileStream.WriteAsync(buffer, 0, read);
                         totalRead += read;
@@ -379,7 +389,25 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                             $"{(totalRead / (1024.0 * 1024.0)):F2} MB / {totalMB:F2} MB");
                     }
                     await fileStream.FlushAsync();
-                    // Console.WriteLine("Tải về thành công tại: " + localFilePath);
+                }
+                
+                // Giải nén sau khi tải xong
+                try
+                {
+                    string extractFolder = Path.Combine(downloadFolder, Path.GetFileNameWithoutExtension(fileName));
+                    ZipFile.ExtractToDirectory(filePath, extractFolder, overwriteFiles: true);
+                    
+                    // Xóa file zip sau khi giải nén
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                        Console.WriteLine("Đã xóa file ZIP gốc.");
+                    }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Lỗi khi giải nén: " + ex.Message);
                     return true;
                 }
             }

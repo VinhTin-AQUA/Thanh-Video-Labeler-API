@@ -25,5 +25,10 @@ namespace ExcelVideoLabeler.API.Hubs.VideoAws
         {
             await videoAwsHub.Clients.Client(VideoAwsHub.ConnectionId).RecieveErrorVideo(_case, serverId, link);
         }
+
+        public async Task RecieveIncreaseSucess(int totalSuccess)
+        {
+            await videoAwsHub.Clients.Client(VideoAwsHub.ConnectionId).RecieveIncreaseSucess(totalSuccess);
+        }
     }
 }
