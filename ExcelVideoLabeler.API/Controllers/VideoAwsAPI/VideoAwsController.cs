@@ -34,7 +34,6 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
 
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private static volatile bool _isDownloading;
-        private static volatile bool _cancelRequested;
         private static CancellationTokenSource cts = new();
         private static string downloadFolder = "";
 
@@ -147,8 +146,19 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
         [HttpGet]
         public async Task<IActionResult> GetRemaining()
         {
-            var config = await videoAwsConfigQueryRepository.GetByIdAsync(1);
+            if (string.IsNullOrEmpty(awsConfig.AccessKey) ||
+                string.IsNullOrEmpty(awsConfig.SecretKey) ||
+                awsConfig.AccessKey == "YOUR_ACCESS_KEY_ID" || 
+                awsConfig.SecretKey == "YOUR_SECRET_ACCESS_KEY")
+            {
+                return BadRequest(new ApiResponse<object>()
+                {
+                    Data = null,
+                    Message = "Set the AWS key and secret"
+                });
+            }
 
+            var config = await videoAwsConfigQueryRepository.GetByIdAsync(1);
             if (config == null)
             {
                 return Ok(new ApiResponse<object>()
@@ -187,7 +197,6 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
             cts = new CancellationTokenSource();
             await _semaphore.WaitAsync();
             _isDownloading = true;
-            _cancelRequested = false;
             var token = cts.Token;
 
             try
@@ -223,17 +232,19 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                     {
                         for (int i = 0; i < total; i++)
                         {
-                            if (_cancelRequested || token.IsCancellationRequested)
+                            if (token.IsCancellationRequested)
+                            {
+                                _isDownloading = false;
                                 break;
-
+                            }
+                            var video = listVideoAws[i];
                             await semaphoreSlim.WaitAsync(token);
-                            int index = i; // Local copy for closure
                             var task = Task.Run(async () =>
                             {
                                 using var scope = scopeFactory.CreateScope();
                                 var _videoInfoCommandRepository = scope.ServiceProvider.GetRequiredService<IVideoAwsInfoCommandRepository>();
                                 var _videoDownloadHubService = scope.ServiceProvider.GetRequiredService<VideoAwsHubService>();
-                                var video = listVideoAws[index];
+                                
                                 
                                 try
                                 {
@@ -311,7 +322,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
             }
 
             cts.Cancel(); // Huỷ mọi token đang dùng
-
+            _isDownloading = false;
             return Ok(new ApiResponse<object>
             {
                 Message = "Stop downloading."
@@ -362,13 +373,11 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                 };
 
                 string filePath = Path.Combine(downloadFolder, fileName);
-                
                 using (GetObjectResponse response = await s3Client.GetObjectAsync(request))
                 {
                     byte[] buffer = new byte[10 * 1024 * 1024]; // 4MB buffer
                     long totalRead = 0;
                     int read;
-                   
                     double totalMB = response.ContentLength / (1024.0 * 1024.0);
                     
                     using Stream responseStream = response.ResponseStream;
@@ -376,10 +385,9 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                     
                     while ((read = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        if (_cancelRequested || _isDownloading == false)
+                        if (_isDownloading == false)
                         {
-                            System.IO.File.Delete(filePath);
-                            return false;
+                            break;
                         }
                         await fileStream.WriteAsync(buffer, 0, read);
                         totalRead += read;
@@ -390,7 +398,13 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                     }
                     await fileStream.FlushAsync();
                 }
-                
+
+                if (_isDownloading == false)
+                {
+                    System.IO.File.Delete(filePath);
+                    return false;
+                }
+
                 // Giải nén sau khi tải xong
                 try
                 {
@@ -408,7 +422,7 @@ namespace ExcelVideoLabeler.API.Controllers.VideoAwsAPI
                 catch (Exception ex)
                 {
                     Console.WriteLine("Lỗi khi giải nén: " + ex.Message);
-                    return true;
+                    return false;
                 }
             }
             catch (AmazonS3Exception e)
